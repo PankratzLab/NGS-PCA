@@ -1,24 +1,11 @@
 package org.pankratzlab.ngspca;
 
 import java.io.File;
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
 import java.util.logging.Logger;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+
 import org.apache.commons.math3.linear.DiagonalMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -113,48 +100,16 @@ public class SimpleNGSPCA implements Serializable {
 		// writer.close();
 	}
 
-	private static final String INPUT_DIR_ARG = "inputDir";
-	private static final String OUTPUT_DIR_ARG = "outputDir";
-
-	private static Options generateOptions() {
-		final Option verboseOption = Option.builder("i").required(false).hasArg(false).longOpt(INPUT_DIR_ARG)
-				.desc("Directory containing mosdepth results files (*.regions.bed.gz)").required().build();
-		final Option fileOption = Option.builder("o").required().longOpt(OUTPUT_DIR_ARG).hasArg()
-				.desc("PCA results and auxillary files will be placed here").required().build();
-		final Options options = new Options();
-		options.addOption(verboseOption);
-		options.addOption(fileOption);
-		return options;
-	}
-
-	private static CommandLine generateCommandLine(Logger log, final Options options,
-			final String[] commandLineArguments) {
-		final CommandLineParser cmdLineParser = new DefaultParser();
-		CommandLine commandLine = null;
-		try {
-			commandLine = cmdLineParser.parse(options, commandLineArguments);
-		} catch (ParseException parseException) {
-
-		    StringWriter out = new StringWriter();
-		    PrintWriter pw = new PrintWriter(out);
-
-			log.severe(parseException.getMessage());
-			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp(pw, 80, "ngspca", "USAGE:", options, 0, 0, "", true);
-			pw.flush();
-			log.severe(out.toString());
-		}
-		return commandLine;
-	}
-
 	public static void main(String[] args) {
-		// Logger logger = LogManager.getLogger(SimpleNGSPCA.class);
 		Logger logger = Logger.getLogger(SimpleNGSPCA.class.getName());
-		// logger.info("HI");
-		CommandLine cmd = generateCommandLine(logger, generateOptions(), args);
+		CommandLine cmd = CmdLine.generateCommandLine(logger, CmdLine.generateOptions(), args);
+		if (cmd == null || cmd.hasOption(CmdLine.HELP)) {
+			CmdLine.printHelp(logger, CmdLine.generateOptions());
+			System.exit(1);
+		}
 
-		String inputDir = cmd.getOptionValue(INPUT_DIR_ARG);
-		String outputDir = cmd.getOptionValue(OUTPUT_DIR_ARG);
+		String inputDir = cmd.getOptionValue(CmdLine.INPUT_DIR_ARG);
+		String outputDir = cmd.getOptionValue(CmdLine.OUTPUT_DIR_ARG);
 
 		new File(outputDir).mkdirs();
 
