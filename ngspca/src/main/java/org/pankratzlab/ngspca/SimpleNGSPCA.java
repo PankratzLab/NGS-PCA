@@ -52,7 +52,7 @@ public class SimpleNGSPCA implements Serializable {
 	private void computeSVD(Logger log) {
 		log.info("computing SVD base");
 
-		DenseMatrix64F a = MatrixOperations.toDenseMatrix64F(m);
+		DenseMatrix64F a = NormalizationOperations.toDenseMatrix64F(m);
 		log.info("Computing EJML PCs");
 		SvdImplicitQrDecompose_D64 svd = new SvdImplicitQrDecompose_D64(false, false, true, false);
 		svd.decompose(a);
