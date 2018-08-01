@@ -26,31 +26,39 @@ class MosdepthUtils {
 		AUTOSOMAL;
 	}
 
-	/**
-	 * @param inputFiles
-	 *            mosdepth output bed files to be processed
-	 * @param tmpFile
-	 * @return
-	 */
-	static DenseMatrix64F processFiles(Logger log, List<String> inputFiles) {
+	// = BedUtils.loadAutosomalUCSC(mosDepthResultFiles.get(0));
 
-		if (inputFiles.isEmpty()) {
+	/**
+	 * @param mosDepthResultFiles
+	 *            mosdepth output bed files to be processed
+	 * @param ucscRegions
+	 *            only these regions will be used
+	 * @param log
+	 * @return normalized {@link DenseMatrix64F} holding all input files
+	 */
+
+	private static DenseMatrix64F processFiles(List<String> mosDepthResultFiles, Set<String> ucscRegions, Logger log) {
+
+		if (mosDepthResultFiles.isEmpty()) {
 			throw new IllegalArgumentException("No input files provided");
 		}
-		log.info("Starting input processing of " + inputFiles.size() + " files");
 
-		Set<String> autosomalRegions = BedUtils.loadAutosomalUCSC(inputFiles.get(0));
-		log.info("Initializing matrix to " + inputFiles.size() + " columns and " + autosomalRegions.size() + " rows");
+		log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and " + ucscRegions.size()
+				+ " rows");
 
 		DenseMatrix64F dm = new DenseMatrix64F(1, 1);
-		dm.reshape(autosomalRegions.size(), inputFiles.size());
-		for (int col = 0; col < inputFiles.size(); col++) {
+		dm.reshape(ucscRegions.size(), mosDepthResultFiles.size());
+
+		log.info("Starting input processing of " + mosDepthResultFiles.size() + " files");
+
+		for (int col = 0; col < mosDepthResultFiles.size(); col++) {
 			if (col % 100 == 0) {
 				log.info("Loading file " + Integer.toString(col + 1));
 			}
-			String inputFile = inputFiles.get(col);
-			List<BEDFeature> features = BedUtils.loadSpecific(inputFile, autosomalRegions);
+			String inputFile = mosDepthResultFiles.get(col);
+			List<BEDFeature> features = BedUtils.loadSpecificRegions(inputFile, ucscRegions);
 			for (int row = 0; row < features.size(); row++) {
+				// mosdepth coverage parsed to "name" by htsjdk
 				String tmp = features.get(row).getName();
 				if (!StringUtils.isNumeric(tmp)) {
 					throw new IllegalArgumentException("Invalid value in file " + inputFile + ", row " + row);

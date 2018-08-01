@@ -47,13 +47,15 @@ public class BedUtils {
 	}
 
 	/**
+	 * TODO, currently not an index-based query. Reads all records and filters
+	 * 
 	 * @param file
 	 *            load {@link BEDFeature}s from this file
 	 * @param ucscRegions
 	 *            {@link Set} of ucsc formatted regions to load
 	 * @return
 	 */
-	static List<BEDFeature> loadSpecific(String file, Set<String> ucscRegions) {
+	static List<BEDFeature> loadSpecificRegions(String file, Set<String> ucscRegions) {
 		BEDFileReader reader = new BEDFileReader(file, false);
 		List<BEDFeature> result = reader.iterator().stream().filter(bf -> ucscRegions.contains(getBedUCSC(bf)))
 				.collect(Collectors.toList());
@@ -64,7 +66,7 @@ public class BedUtils {
 
 	/**
 	 * @param bedFeature
-	 * @return UCSC represenation of this {@link BEDFeature}
+	 * @return UCSC representation of this {@link BEDFeature}
 	 */
 	static String getBedUCSC(BEDFeature bedFeature) {
 		return bedFeature.getContig() + ":" + bedFeature.getStart() + "-" + bedFeature.getEnd();
