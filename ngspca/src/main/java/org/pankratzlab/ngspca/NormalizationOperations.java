@@ -39,38 +39,38 @@ public class NormalizationOperations {
 	 *            an {@link RealMatrix} that has been FC-ed by column and centered
 	 *            by row
 	 */
-	static void foldChangeAndCenterRows(RealMatrix m) {
+	static void foldChangeAndCenterRows(DenseMatrix64F dm) {
 		// compute fold change
-		computeFoldChangeByColumn(m);
+		computeFoldChangeByColumn(dm);
 		// center rows to median of 0
-		centerRowsToMedian(m);
+		centerRowsToMedian(dm);
 	}
 
 	/**
 	 * Set the values of the matrix to the log 2 fold change (computed by column)
 	 * 
-	 * @param m
-	 *            the {@link RealMatrix} that will be converted
+	 * @param dm
+	 *            the {@link DenseMatrix64F} that will be converted
 	 */
-	private static void computeFoldChangeByColumn(RealMatrix m) {
-		double[] medians = new double[m.getColumnDimension()];
+	private static void computeFoldChangeByColumn(DenseMatrix64F dm) {
+		double[] medians = new double[dm.getNumCols()];
 
 		// convert columns to log2 fold-change from median
-		for (int column = 0; column < m.getColumnDimension(); column++) {
-			double[] tmp = new double[m.getRowDimension()];
-			for (int row = 0; row < m.getRowDimension(); row++) {
-				tmp[row] += m.getEntry(row, column);
+		for (int column = 0; column < dm.getNumCols(); column++) {
+			double[] tmp = new double[dm.getNumRows()];
+			for (int row = 0; row < dm.getNumRows(); row++) {
+				tmp[row] += dm.get(row, column);
 			}
 			medians[column] = median(tmp);
 		}
-		for (int row = 0; row < m.getRowDimension(); row++) {
-			for (int column = 0; column < m.getColumnDimension(); column++) {
-				double entry = m.getEntry(row, column);
+		for (int row = 0; row < dm.getNumRows(); row++) {
+			for (int column = 0; column < dm.getNumCols(); column++) {
+				double entry = dm.get(row, column);
 				if (entry > 0) {
 					double standard = log2(entry / medians[column]);
-					m.setEntry(row, column, standard);
+					dm.set(row, column, standard);
 				} else {
-					m.setEntry(row, column, 0);
+					dm.set(row, column, 0);
 				}
 			}
 		}
@@ -85,15 +85,18 @@ public class NormalizationOperations {
 	}
 
 	/**
-	 * @param m
-	 *            Center the rows of this {@link RealMatrix} to a median of 0
+	 * @param dm
+	 *            Center the rows of this {@link DenseMatrix64F} to a median of 0
 	 */
-	private static void centerRowsToMedian(RealMatrix m) {
-		for (int row = 0; row < m.getRowDimension(); row++) {
-			double[] tmp = m.getRow(row);
+	private static void centerRowsToMedian(DenseMatrix64F dm) {
+		for (int row = 0; row < dm.getNumRows(); row++) {
+			double[] tmp = new double[dm.getNumCols()];
+			for (int col = 0; col < dm.getNumCols(); col++) {
+				tmp[col] = dm.get(row, col);
+			}
 			double median = median(tmp);
-			for (int column = 0; column < m.getColumnDimension(); column++) {
-				m.setEntry(row, column, tmp[column] - median);
+			for (int col = 0; col < dm.getNumCols(); col++) {
+				dm.set(row, col, tmp[col] - median);
 			}
 		}
 	}

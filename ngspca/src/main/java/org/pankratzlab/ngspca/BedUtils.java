@@ -24,15 +24,6 @@ public class BedUtils {
 
 	/**
 	 * @param file
-	 *            load autosomal {@link BEDFeature}s from this file
-	 * @return {@link List} of {@link BEDFeature}
-	 */
-	static List<BEDFeature> loadAutosomal(String file) {
-		return BedUtils.loadAll(file).stream().filter(BedUtils::autosomal).collect(Collectors.toList());
-	}
-
-	/**
-	 * @param file
 	 *            load autosomal {@link BEDFeature}s from this file and convert to
 	 *            UCSC format
 	 * @return {@link Set} of ucsc regions
