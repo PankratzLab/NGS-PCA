@@ -31,6 +31,32 @@ class MosdepthUtils {
 	/**
 	 * @param mosDepthResultFiles
 	 *            mosdepth output bed files to be processed
+	 * @param rStrategy
+	 *            {@link REGION_STRATEGY} to use for processing
+	 * @param log
+	 * @return
+	 */
+	static DenseMatrix64F processFiles(List<String> mosDepthResultFiles, REGION_STRATEGY rStrategy, Logger log) {
+		if (mosDepthResultFiles.isEmpty()) {
+			String err = "No input files provided";
+			log.severe(err);
+			throw new IllegalArgumentException(err);
+		}
+		switch (rStrategy) {
+		case AUTOSOMAL:
+			return processFiles(mosDepthResultFiles, BedUtils.loadAutosomalUCSC(mosDepthResultFiles.get(0)), log);
+		default:
+			String err = "Invalid region strategy type " + rStrategy;
+			log.severe(err);
+			throw new IllegalArgumentException(err);
+
+		}
+
+	}
+
+	/**
+	 * @param mosDepthResultFiles
+	 *            mosdepth output bed files to be processed
 	 * @param ucscRegions
 	 *            only these regions will be used
 	 * @param log
@@ -38,10 +64,6 @@ class MosdepthUtils {
 	 */
 
 	private static DenseMatrix64F processFiles(List<String> mosDepthResultFiles, Set<String> ucscRegions, Logger log) {
-
-		if (mosDepthResultFiles.isEmpty()) {
-			throw new IllegalArgumentException("No input files provided");
-		}
 
 		log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and " + ucscRegions.size()
 				+ " rows");

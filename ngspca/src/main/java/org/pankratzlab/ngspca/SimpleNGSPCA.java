@@ -13,6 +13,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.ejml.alg.dense.decomposition.svd.SvdImplicitQrDecompose_D64;
 import org.ejml.data.DenseMatrix64F;
 import org.ejml.ops.SingularOps;
+import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 
 /**
  * A simplified version of BamImport that uses MosDepth output to generate PCS
@@ -100,19 +101,25 @@ public class SimpleNGSPCA implements Serializable {
 		// writer.close();
 	}
 
+	private static void run(String inputDir, String outputDir, Logger log) {
+		new File(outputDir).mkdirs();
+
+		// MosdepthUtils.processFiles(mosDepthResultFiles, REGION_STRATEGY.AUTOSOMAL,
+		// log);
+
+	}
+
 	public static void main(String[] args) {
-		Logger logger = Logger.getLogger(SimpleNGSPCA.class.getName());
-		CommandLine cmd = CmdLine.generateCommandLine(logger, CmdLine.generateOptions(), args);
+		Logger log = Logger.getLogger(SimpleNGSPCA.class.getName());
+		CommandLine cmd = CmdLine.generateCommandLine(log, CmdLine.generateOptions(), args);
 		if (cmd == null || cmd.hasOption(CmdLine.HELP)) {
-			CmdLine.printHelp(logger, CmdLine.generateOptions());
+			CmdLine.printHelp(log, CmdLine.generateOptions());
 			System.exit(1);
 		}
 
 		String inputDir = cmd.getOptionValue(CmdLine.INPUT_DIR_ARG);
 		String outputDir = cmd.getOptionValue(CmdLine.OUTPUT_DIR_ARG);
-
-		new File(outputDir).mkdirs();
-
+		run(inputDir, outputDir, log);
 	}
 
 	// static void runGroup(CLI c, SCALE_METHOD method, String rootoutDir, Logger
