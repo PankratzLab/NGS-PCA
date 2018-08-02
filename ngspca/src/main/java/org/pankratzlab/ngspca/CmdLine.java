@@ -34,7 +34,8 @@ class CmdLine {
 		final Option help = Option.builder("h").required().longOpt(HELP).hasArg()
 				.desc("print application usage and exit").hasArg(false).required(false).build();
 		final Option inputOption = Option.builder("i").hasArg(true).longOpt(INPUT_DIR_ARG)
-				.desc("Directory containing mosdepth results files (*.regions.bed.gz)").required().build();
+				.desc("Directory containing mosdepth results files (*" + MosdepthUtils.MOSDEPHT_BED_EXT + ")")
+				.required().build();
 		final Option outputOption = Option.builder("o").hasArg(true).required().longOpt(OUTPUT_DIR_ARG).hasArg()
 				.desc("PCA results and auxillary files will be placed here").required().build();
 
