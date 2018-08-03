@@ -19,6 +19,8 @@ import org.apache.commons.cli.ParseException;
 class CmdLine {
 	static final String INPUT_DIR_ARG = "inputDir";
 	static final String OUTPUT_DIR_ARG = "outputDir";
+	static final String OVERWRITE_ARG = "overwrite";
+
 	static final String HELP = "help";
 
 	private CmdLine() {
@@ -33,6 +35,9 @@ class CmdLine {
 	static Options generateOptions() {
 		final Option help = Option.builder("h").required().longOpt(HELP).hasArg()
 				.desc("print application usage and exit").hasArg(false).required(false).build();
+		final Option overwrite = Option.builder("r").required().longOpt(OVERWRITE_ARG).hasArg()
+				.desc("overwrite existing temporary files and recompute each step").hasArg(false).required(false)
+				.build();
 		final Option inputOption = Option.builder("i").hasArg(true).longOpt(INPUT_DIR_ARG)
 				.desc("Directory containing mosdepth results files (*" + MosdepthUtils.MOSDEPHT_BED_EXT + ")")
 				.required().build();
@@ -43,7 +48,7 @@ class CmdLine {
 		options.addOption(inputOption);
 		options.addOption(outputOption);
 		options.addOption(help);
-
+		options.addOption(overwrite);
 		return options;
 	}
 
