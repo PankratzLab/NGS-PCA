@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
 import org.apache.commons.cli.CommandLine;
 import org.ejml.data.DenseMatrix64F;
 import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
@@ -16,66 +15,68 @@ import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
  */
 public class NGSPCA implements Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
 
-	private static void run(String inputDir, String outputDir, boolean overwrite, Logger log) {
-		new File(outputDir).mkdirs();
+  private static void run(String inputDir, String outputDir, boolean overwrite, Logger log) {
+    new File(outputDir).mkdirs();
 
-		String[] extensions = new String[] { MosdepthUtils.MOSDEPHT_BED_EXT };
+    String[] extensions = new String[] {MosdepthUtils.MOSDEPHT_BED_EXT};
 
-		// get all files with mosdepth bed extension
-		List<String> mosDepthResultFiles = FileOps.listFilesWithExtension(inputDir, extensions);
-		if (mosDepthResultFiles.isEmpty()) {
+    // get all files with mosdepth bed extension
+    List<String> mosDepthResultFiles = FileOps.listFilesWithExtension(inputDir, extensions);
+    if (mosDepthResultFiles.isEmpty()) {
 
-			String err = "No input files provided";
-			log.severe(err);
-			throw new IllegalArgumentException(err);
-		}
-		// parse sample names from files
+      String err = "No input files provided";
+      log.severe(err);
+      throw new IllegalArgumentException(err);
+    }
+    // parse sample names from files
 
-		List<String> samples = mosDepthResultFiles.stream()
-				.map(f -> FileOps.stripDirectoryAndExtension(f, MosdepthUtils.MOSDEPHT_BED_EXT))
-				.collect(Collectors.toList());
+    List<String> samples = mosDepthResultFiles.stream()
+                                              .map(f -> FileOps.stripDirectoryAndExtension(f,
+                                                                                           MosdepthUtils.MOSDEPHT_BED_EXT))
+                                              .collect(Collectors.toList());
 
-		// load ucsc regions to use
+    // load ucsc regions to use
 
-		List<String> regions = MosdepthUtils.getRegionsToUse(mosDepthResultFiles.get(0), REGION_STRATEGY.AUTOSOMAL,
-				log);
+    List<String> regions = MosdepthUtils.getRegionsToUse(mosDepthResultFiles.get(0),
+                                                         REGION_STRATEGY.AUTOSOMAL, log);
 
-		String tmpDm = outputDir + "tmp.mat.ser.gz";
-		DenseMatrix64F dm;
-		if (!FileOps.fileExists(tmpDm)) {
-			dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), log);
-		} else {
-			dm = null;
-		}
+    String tmpDm = outputDir + "tmp.mat.ser.gz";
+    DenseMatrix64F dm;
+    if (!FileOps.fileExists(tmpDm)) {
+      dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), log);
+    } else {
+      dm = null;
+    }
 
-		SVD svd = new SVD(samples.toArray(new String[samples.size()]), regions.toArray(new String[regions.size()]));
-		svd.computeSVD(dm, log);
-	}
+    SVD svd = new SVD(samples.toArray(new String[samples.size()]),
+                      regions.toArray(new String[regions.size()]));
+    svd.computeSVD(dm, log);
+  }
 
-	public static void main(String[] args) {
-		Logger log = Logger.getLogger(NGSPCA.class.getName());
-		CommandLine cmd = CmdLine.generateCommandLine(log, CmdLine.generateOptions(), args);
-		if (cmd == null || cmd.hasOption(CmdLine.HELP)) {
-			CmdLine.printHelp(log, CmdLine.generateOptions());
-			System.exit(1);
-		}
+  public static void main(String[] args) {
+    Logger log = Logger.getLogger(NGSPCA.class.getName());
+    CommandLine cmd = CmdLine.generateCommandLine(log, CmdLine.generateOptions(), args);
+    if (cmd == null || cmd.hasOption(CmdLine.HELP)) {
+      CmdLine.printHelp(log, CmdLine.generateOptions());
+      System.exit(1);
+    }
 
-		String inputDir = cmd.getOptionValue(CmdLine.INPUT_DIR_ARG);
-		String outputDir = cmd.getOptionValue(CmdLine.OUTPUT_DIR_ARG);
-		run(inputDir, outputDir, cmd.hasOption(CmdLine.OVERWRITE_ARG), log);
-	}
+    String inputDir = cmd.getOptionValue(CmdLine.INPUT_DIR_ARG);
+    String outputDir = cmd.getOptionValue(CmdLine.OUTPUT_DIR_ARG);
+    run(inputDir, outputDir, cmd.hasOption(CmdLine.OVERWRITE_ARG), log);
+  }
 
-	//
-	// SerializedFiles.writeSerial(tm, svdFile, true);
-	// }
-	// log.reportTimeInfo("Loading " + svdFile);
-	// SimpleNGSPCA tm = (SimpleNGSPCA) SerializedFiles.readSerial(svdFile, log,
-	// false);
-	// tm.dumpPCsToText(pcFile);
-	// }
+  //
+  // SerializedFiles.writeSerial(tm, svdFile, true);
+  // }
+  // log.reportTimeInfo("Loading " + svdFile);
+  // SimpleNGSPCA tm = (SimpleNGSPCA) SerializedFiles.readSerial(svdFile, log,
+  // false);
+  // tm.dumpPCsToText(pcFile);
+  // }
 }
