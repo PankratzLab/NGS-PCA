@@ -16,7 +16,12 @@ import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 /**
  * A simplified version of BamImport that uses MosDepth output to generate PCS
  */
-public class SimpleNGSPCA implements Serializable {
+public class NGSPCA implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	private static String parseSampleFromFilename(String path) {
 
@@ -44,7 +49,7 @@ public class SimpleNGSPCA implements Serializable {
 		}
 		// parse sample names from files
 
-		List<String> samples = mosDepthResultFiles.stream().map(SimpleNGSPCA::parseSampleFromFilename)
+		List<String> samples = mosDepthResultFiles.stream().map(NGSPCA::parseSampleFromFilename)
 				.collect(Collectors.toList());
 
 		// load ucsc regions to use
@@ -65,7 +70,7 @@ public class SimpleNGSPCA implements Serializable {
 	}
 
 	public static void main(String[] args) {
-		Logger log = Logger.getLogger(SimpleNGSPCA.class.getName());
+		Logger log = Logger.getLogger(NGSPCA.class.getName());
 		CommandLine cmd = CmdLine.generateCommandLine(log, CmdLine.generateOptions(), args);
 		if (cmd == null || cmd.hasOption(CmdLine.HELP)) {
 			CmdLine.printHelp(log, CmdLine.generateOptions());
