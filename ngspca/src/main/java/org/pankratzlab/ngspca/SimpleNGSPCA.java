@@ -60,8 +60,8 @@ public class SimpleNGSPCA implements Serializable {
 			dm = null;
 		}
 
-		SVD svd = new SVD(dm, samples.toArray(new String[samples.size()]), regions.toArray(new String[regions.size()]));
-		svd.computeSVD(log);
+		SVD svd = new SVD(samples.toArray(new String[samples.size()]), regions.toArray(new String[regions.size()]));
+		svd.computeSVD(dm, log);
 	}
 
 	public static void main(String[] args) {
