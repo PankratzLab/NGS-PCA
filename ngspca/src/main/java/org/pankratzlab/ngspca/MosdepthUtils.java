@@ -76,6 +76,7 @@ class MosdepthUtils {
 
 	private static DenseMatrix64F loadData(List<String> mosDepthResultFiles, Set<String> ucscRegions, Logger log) {
 
+		// TODO use map to verify region indices
 		log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and " + ucscRegions.size()
 				+ " rows");
 
