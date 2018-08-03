@@ -8,7 +8,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FileUtils;
-
+import org.apache.commons.io.FilenameUtils;
+import org.ejml.data.DenseMatrix64F;
 import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 
 /**
@@ -38,15 +39,31 @@ public class SimpleNGSPCA implements Serializable {
 		// writer.close();
 	}
 
-	private static void run(String inputDir, String outputDir, Logger log) {
+	private static String parseSampleFromFilename(String path) {
+
+		return FilenameUtils.getName(path).replaceAll(MosdepthUtils.MOSDEPHT_BED_EXT, "");
+	}
+
+	private static boolean fileExists(String path) {
+		File f = new File(path);
+		return f.exists() && !f.isDirectory();
+	}
+
+	private static void run(String inputDir, String outputDir, boolean overwrite, Logger log) {
 		new File(outputDir).mkdirs();
 
 		String[] extensions = new String[] { MosdepthUtils.MOSDEPHT_BED_EXT };
 
-		List<File> mosDepthResultFiles = (List<File>) FileUtils.listFiles(new File(inputDir), extensions, true);
+		List<String> mosDepthResultFiles = FileUtils.listFiles(new File(inputDir), extensions, true).stream()
+				.map(File::getAbsolutePath).collect(Collectors.toList());
+		List<String> samples = mosDepthResultFiles.stream().map(SimpleNGSPCA::parseSampleFromFilename)
+				.collect(Collectors.toList());
 
-		MosdepthUtils.processFiles(mosDepthResultFiles.stream().map(File::getAbsolutePath).collect(Collectors.toList()),
-				REGION_STRATEGY.AUTOSOMAL, log);
+		String tmpDm = outputDir + "tmp.mat.ser.gz";
+		DenseMatrix64F dm;
+		if (!fileExists(tmpDm)) {
+			dm = MosdepthUtils.processFiles(mosDepthResultFiles, REGION_STRATEGY.AUTOSOMAL, log);
+		}
 	}
 
 	public static void main(String[] args) {
@@ -59,7 +76,7 @@ public class SimpleNGSPCA implements Serializable {
 
 		String inputDir = cmd.getOptionValue(CmdLine.INPUT_DIR_ARG);
 		String outputDir = cmd.getOptionValue(CmdLine.OUTPUT_DIR_ARG);
-		run(inputDir, outputDir, log);
+		run(inputDir, outputDir, cmd.hasOption(CmdLine.OVERWRITE_ARG), log);
 	}
 
 	// static void runGroup(CLI c, SCALE_METHOD method, String rootoutDir, Logger
