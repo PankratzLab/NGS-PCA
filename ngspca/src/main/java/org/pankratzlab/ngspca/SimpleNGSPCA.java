@@ -2,10 +2,14 @@ package org.pankratzlab.ngspca;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.linear.DiagonalMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -104,9 +108,12 @@ public class SimpleNGSPCA implements Serializable {
 	private static void run(String inputDir, String outputDir, Logger log) {
 		new File(outputDir).mkdirs();
 
-		// MosdepthUtils.processFiles(mosDepthResultFiles, REGION_STRATEGY.AUTOSOMAL,
-		// log);
+		String[] extensions = new String[] { MosdepthUtils.MOSDEPHT_BED_EXT };
 
+		List<File> mosDepthResultFiles = (List<File>) FileUtils.listFiles(new File(inputDir), extensions, true);
+
+		MosdepthUtils.processFiles(mosDepthResultFiles.stream().map(File::getAbsolutePath).collect(Collectors.toList()),
+				REGION_STRATEGY.AUTOSOMAL, log);
 	}
 
 	public static void main(String[] args) {

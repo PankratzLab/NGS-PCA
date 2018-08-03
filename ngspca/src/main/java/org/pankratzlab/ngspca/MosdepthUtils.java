@@ -15,7 +15,7 @@ import htsjdk.tribble.bed.BEDFeature;
  */
 class MosdepthUtils {
 
-	static final String MOSDEPHT_BED_EXT = ".regions.bed.gz";
+	static final String MOSDEPHT_BED_EXT = "regions.bed.gz";
 
 	/**
 	 * TODO, region strategies for specific targets
@@ -84,10 +84,11 @@ class MosdepthUtils {
 			for (int row = 0; row < features.size(); row++) {
 				// mosdepth coverage parsed to "name" by htsjdk
 				String tmp = features.get(row).getName();
-				if (!StringUtils.isNumeric(tmp)) {
+				try {
+					dm.set(row, col, Double.parseDouble(tmp));
+				} catch (NumberFormatException nfe) {
 					throw new IllegalArgumentException("Invalid value in file " + inputFile + ", row " + row);
 				}
-				dm.set(row, col, Double.parseDouble(tmp));
 
 			}
 		}
