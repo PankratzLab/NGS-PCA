@@ -15,23 +15,6 @@ public class NormalizationOperations {
 	}
 
 	/**
-	 * @param m
-	 *            Convert this apache {@link RealMatrix} to an EJML style
-	 *            {@link DenseMatrix64F}
-	 * @return {@link DenseMatrix64F}
-	 */
-	public static DenseMatrix64F toDenseMatrix64F(RealMatrix m) {
-		DenseMatrix64F dm = new DenseMatrix64F(1, 1);
-		dm.reshape(m.getRowDimension(), m.getColumnDimension());
-		for (int row = 0; row < m.getRowDimension(); row++) {
-			for (int column = 0; column < m.getColumnDimension(); column++) {
-				dm.add(row, column, m.getEntry(row, column));
-			}
-		}
-		return dm;
-	}
-
-	/**
 	 * compute fold-change (by column) , and then center the matrix so each row has
 	 * median of 0;
 	 * 
