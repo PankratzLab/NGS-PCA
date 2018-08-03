@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang3.StringUtils;
 import org.ejml.data.DenseMatrix64F;
 
 import htsjdk.tribble.bed.BEDFeature;
@@ -28,32 +27,42 @@ class MosdepthUtils {
 		AUTOSOMAL;
 	}
 
-	// = BedUtils.loadAutosomalUCSC(mosDepthResultFiles.get(0));
-
 	/**
-	 * @param mosDepthResultFiles
-	 *            mosdepth output bed files to be processed
+	 * @param mosDepthResultFile
+	 *            an example file to load regions from
 	 * @param rStrategy
-	 *            {@link REGION_STRATEGY} to use for processing
+	 *            {@link REGION_STRATEGY} to use
 	 * @param log
-	 * @return
+	 * @return {@link List} of regions
 	 */
-	static DenseMatrix64F processFiles(List<String> mosDepthResultFiles, REGION_STRATEGY rStrategy, Logger log) {
-		if (mosDepthResultFiles.isEmpty()) {
-			String err = "No input files provided";
-			log.severe(err);
-			throw new IllegalArgumentException(err);
-		}
+	static List<String> getRegionsToUse(String mosDepthResultFile, REGION_STRATEGY rStrategy, Logger log) {
+
 		switch (rStrategy) {
 		case AUTOSOMAL:
-			return processFiles(mosDepthResultFiles, BedUtils.loadAutosomalUCSC(mosDepthResultFiles.get(0)), log);
+			return BedUtils.loadAutosomalUCSC(mosDepthResultFile);
 		default:
 			String err = "Invalid region strategy type " + rStrategy;
 			log.severe(err);
 			throw new IllegalArgumentException(err);
 
 		}
+	}
 
+	/**
+	 * @param mosDepthResultFiles
+	 *            mosdepth output bed files to be processed
+	 * @param ucscRegions
+	 *            {@link Set} of regions to process
+	 * @param log
+	 * @return
+	 */
+	static DenseMatrix64F processFiles(List<String> mosDepthResultFiles, Set<String> ucscRegions, Logger log) {
+		if (mosDepthResultFiles.isEmpty()) {
+			String err = "No input files provided";
+			log.severe(err);
+			throw new IllegalArgumentException(err);
+		}
+		return loadData(mosDepthResultFiles, ucscRegions, log);
 	}
 
 	/**
@@ -65,7 +74,7 @@ class MosdepthUtils {
 	 * @return normalized {@link DenseMatrix64F} holding all input files
 	 */
 
-	private static DenseMatrix64F processFiles(List<String> mosDepthResultFiles, Set<String> ucscRegions, Logger log) {
+	private static DenseMatrix64F loadData(List<String> mosDepthResultFiles, Set<String> ucscRegions, Logger log) {
 
 		log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and " + ucscRegions.size()
 				+ " rows");

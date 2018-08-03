@@ -2,6 +2,7 @@ package org.pankratzlab.ngspca;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -54,16 +55,35 @@ public class SimpleNGSPCA implements Serializable {
 
 		String[] extensions = new String[] { MosdepthUtils.MOSDEPHT_BED_EXT };
 
+		// get all files with mosdepth bed extension
 		List<String> mosDepthResultFiles = FileUtils.listFiles(new File(inputDir), extensions, true).stream()
 				.map(File::getAbsolutePath).collect(Collectors.toList());
+		if (mosDepthResultFiles.isEmpty()) {
+
+			String err = "No input files provided";
+			log.severe(err);
+			throw new IllegalArgumentException(err);
+		}
+		// parse sample names from files
+
 		List<String> samples = mosDepthResultFiles.stream().map(SimpleNGSPCA::parseSampleFromFilename)
 				.collect(Collectors.toList());
+
+		// load ucsc regions to use
+
+		List<String> regions = MosdepthUtils.getRegionsToUse(mosDepthResultFiles.get(0), REGION_STRATEGY.AUTOSOMAL,
+				log);
 
 		String tmpDm = outputDir + "tmp.mat.ser.gz";
 		DenseMatrix64F dm;
 		if (!fileExists(tmpDm)) {
-			dm = MosdepthUtils.processFiles(mosDepthResultFiles, REGION_STRATEGY.AUTOSOMAL, log);
+			dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), log);
+		} else {
+			dm = null;
 		}
+
+		SVD svd = new SVD(dm, samples.toArray(new String[samples.size()]), regions.toArray(new String[regions.size()]));
+		svd.computeSVD(log);
 	}
 
 	public static void main(String[] args) {

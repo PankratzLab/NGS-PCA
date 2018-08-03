@@ -34,7 +34,7 @@ class SVD implements Serializable {
 	 * @param colNames
 	 * @param rowNames
 	 */
-	private SVD(DenseMatrix64F dm, String[] colNames, String[] rowNames) {
+	SVD(DenseMatrix64F dm, String[] colNames, String[] rowNames) {
 		super();
 		this.dm = dm;
 		this.colNames = colNames;

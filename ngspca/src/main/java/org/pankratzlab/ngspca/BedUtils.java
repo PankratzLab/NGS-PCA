@@ -26,11 +26,11 @@ public class BedUtils {
 	 * @param file
 	 *            load autosomal {@link BEDFeature}s from this file and convert to
 	 *            UCSC format
-	 * @return {@link Set} of ucsc regions
+	 * @return {@link List} of ucsc regions
 	 */
-	static Set<String> loadAutosomalUCSC(String file) {
+	static List<String> loadAutosomalUCSC(String file) {
 		return BedUtils.loadAll(file).stream().filter(BedUtils::autosomal).map(BedUtils::getBedUCSC)
-				.collect(Collectors.toSet());
+				.collect(Collectors.toList());
 	}
 
 	/**
