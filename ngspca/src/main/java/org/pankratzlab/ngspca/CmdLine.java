@@ -39,7 +39,7 @@ class CmdLine {
                                    .desc("overwrite existing temporary files and recompute each step")
                                    .hasArg(false).required(false).build();
     final Option inputOption = Option.builder("i").hasArg(true).longOpt(INPUT_DIR_ARG)
-                                     .desc("Directory containing mosdepth results files (*"
+                                     .desc("An existing directory containing mosdepth result files (*"
                                            + MosdepthUtils.MOSDEPHT_BED_EXT + ")")
                                      .required().build();
     final Option outputOption = Option.builder("o").hasArg(true).required().longOpt(OUTPUT_DIR_ARG)

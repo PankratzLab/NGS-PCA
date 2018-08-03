@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
@@ -68,7 +69,15 @@ public class NGSPCA implements Serializable {
 
     String inputDir = cmd.getOptionValue(CmdLine.INPUT_DIR_ARG);
     String outputDir = cmd.getOptionValue(CmdLine.OUTPUT_DIR_ARG);
-    run(inputDir, outputDir, cmd.hasOption(CmdLine.OVERWRITE_ARG), log);
+
+    try {
+      run(inputDir, outputDir, cmd.hasOption(CmdLine.OVERWRITE_ARG), log);
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "an exception was thrown", e);
+      log.severe("An exception occured while running\nFeel free to open an issue at https://github.com/PankratzLab/NGS-PCA after reviewing the help message below");
+      CmdLine.printHelp(log, CmdLine.generateOptions());
+
+    }
   }
 
   //
