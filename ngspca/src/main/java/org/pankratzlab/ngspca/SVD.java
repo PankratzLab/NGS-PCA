@@ -3,9 +3,6 @@ package org.pankratzlab.ngspca;
 import java.io.Serializable;
 import java.util.logging.Logger;
 
-import org.apache.commons.math3.linear.DiagonalMatrix;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
 import org.ejml.alg.dense.decomposition.svd.SvdImplicitQrDecompose_D64;
 import org.ejml.data.DenseMatrix64F;
 import org.ejml.ops.SingularOps;
@@ -63,5 +60,27 @@ class SVD implements Serializable {
 		for (int i = 0; i < numSingular; i++) {
 			w[i] = tmpW.get(i, i);
 		}
+	}
+
+	private void dumpPCsToText(String file) {
+		//
+		// PrintWriter writer = Files.getAppropriateWriter(file);
+		// StringJoiner joiner = new StringJoiner("\t");
+		// joiner.add("SAMPLE");
+		// for (int i = 0; i < v.getColumnDimension(); i++) {
+		// joiner.add("PC" + (i + 1));
+		// }
+		// writer.println(joiner.toString());
+		//
+		// for (int i = 0; i < v.getRowDimension(); i++) {
+		// StringJoiner sample = new StringJoiner("\t");
+		// sample.add(colNames[i]);
+		// for (int j = 0; j < v.getColumnDimension(); j++) {
+		// sample.add(Double.toString(v.getEntry(j, i)));
+		// }
+		// writer.println(sample.toString());
+		//
+		// }
+		// writer.close();
 	}
 }

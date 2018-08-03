@@ -18,28 +18,6 @@ import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
  */
 public class SimpleNGSPCA implements Serializable {
 
-	private void dumpPCsToText(String file) {
-		//
-		// PrintWriter writer = Files.getAppropriateWriter(file);
-		// StringJoiner joiner = new StringJoiner("\t");
-		// joiner.add("SAMPLE");
-		// for (int i = 0; i < v.getColumnDimension(); i++) {
-		// joiner.add("PC" + (i + 1));
-		// }
-		// writer.println(joiner.toString());
-		//
-		// for (int i = 0; i < v.getRowDimension(); i++) {
-		// StringJoiner sample = new StringJoiner("\t");
-		// sample.add(colNames[i]);
-		// for (int j = 0; j < v.getColumnDimension(); j++) {
-		// sample.add(Double.toString(v.getEntry(j, i)));
-		// }
-		// writer.println(sample.toString());
-		//
-		// }
-		// writer.close();
-	}
-
 	private static String parseSampleFromFilename(String path) {
 
 		return FilenameUtils.getName(path).replaceAll(MosdepthUtils.MOSDEPHT_BED_EXT, "");
