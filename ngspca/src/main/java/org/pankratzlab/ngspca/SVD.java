@@ -1,6 +1,11 @@
 package org.pankratzlab.ngspca;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.util.StringJoiner;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ejml.alg.dense.decomposition.svd.SvdImplicitQrDecompose_D64;
 import org.ejml.data.DenseMatrix64F;
@@ -42,7 +47,7 @@ class SVD implements Serializable {
       throw new IllegalArgumentException("Mismatched row lengths");
     }
     log.info("Computing EJML PCs");
-    this.svd = new SvdImplicitQrDecompose_D64(false, true, true, false);
+    this.svd = new SvdImplicitQrDecompose_D64(false, true, true, true);
     svd.decompose(dm);
     log.info("Finished Computing EJML PCs");
 
@@ -65,25 +70,32 @@ class SVD implements Serializable {
     return singularValues;
   }
 
-  private void dumpPCsToText(String file) {
+  private void dumpPCsToText(String file, Logger log) {
     //
-    // PrintWriter writer = Files.getAppropriateWriter(file);
-    // StringJoiner joiner = new StringJoiner("\t");
-    // joiner.add("SAMPLE");
-    // for (int i = 0; i < v.getColumnDimension(); i++) {
-    // joiner.add("PC" + (i + 1));
-    // }
-    // writer.println(joiner.toString());
-    //
-    // for (int i = 0; i < v.getRowDimension(); i++) {
-    // StringJoiner sample = new StringJoiner("\t");
-    // sample.add(colNames[i]);
-    // for (int j = 0; j < v.getColumnDimension(); j++) {
-    // sample.add(Double.toString(v.getEntry(j, i)));
-    // }
-    // writer.println(sample.toString());
-    //
-    // }
-    // writer.close();
+    try (PrintWriter writer = new PrintWriter(new File(file))) {
+
+      StringJoiner joiner = new StringJoiner("\t");
+      joiner.add("SAMPLE");
+      DenseMatrix64F v = svd.getV(null, true);
+      for (int i = 0; i < v.getNumCols(); i++) {
+        joiner.add("PC" + (i + 1));
+      }
+      writer.println(joiner.toString());
+
+      for (int i = 0; i < v.getNumRows(); i++) {
+        StringJoiner sample = new StringJoiner("\t");
+        sample.add(colNames[i]);
+        for (int j = 0; j < v.getNumCols(); j++) {
+          sample.add(Double.toString(v.get(j, i)));
+        }
+        writer.println(sample.toString());
+
+      }
+    } catch (FileNotFoundException e) {
+
+      log.log(Level.SEVERE, "unable to write to file " + file, e);
+
+    }
+
   }
 }

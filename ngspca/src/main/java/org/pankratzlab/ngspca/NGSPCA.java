@@ -28,14 +28,18 @@ public class NGSPCA implements Serializable {
 
     // get all files with mosdepth bed extension
     List<String> mosDepthResultFiles = FileOps.listFilesWithExtension(inputDir, extensions);
+    mosDepthResultFiles = mosDepthResultFiles.subList(0, 30);
+
     if (mosDepthResultFiles.isEmpty()) {
 
       String err = "No input files provided";
       log.severe(err);
       throw new IllegalArgumentException(err);
+    } else {
+      log.info("Detected " + mosDepthResultFiles.size() + " mosdepth input files in " + inputDir
+               + " with extension \"" + MosdepthUtils.MOSDEPHT_BED_EXT + "\"");
     }
     // parse sample names from files
-
     List<String> samples = mosDepthResultFiles.stream()
                                               .map(f -> FileOps.stripDirectoryAndExtension(f,
                                                                                            MosdepthUtils.MOSDEPHT_BED_EXT))

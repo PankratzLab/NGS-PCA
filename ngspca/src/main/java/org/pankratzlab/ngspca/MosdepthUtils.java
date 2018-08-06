@@ -32,6 +32,8 @@ class MosdepthUtils {
   static List<String> getRegionsToUse(String mosDepthResultFile, REGION_STRATEGY rStrategy,
                                       Logger log) {
 
+    log.info("Selecting regions using " + rStrategy + " region strategy");
+
     switch (rStrategy) {
       case AUTOSOMAL:
         return BedUtils.loadAutosomalUCSC(mosDepthResultFile);
@@ -79,7 +81,7 @@ class MosdepthUtils {
     log.info("Starting input processing of " + mosDepthResultFiles.size() + " files");
 
     for (int col = 0; col < mosDepthResultFiles.size(); col++) {
-      if (col % 100 == 0) {
+      if (col % 2 == 0) {
         log.info("Loading file " + Integer.toString(col + 1));
       }
       String inputFile = mosDepthResultFiles.get(col);
