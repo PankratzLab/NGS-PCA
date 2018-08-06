@@ -22,7 +22,7 @@ public class NGSPCA {
 
     // get all files with mosdepth bed extension
     List<String> mosDepthResultFiles = FileOps.listFilesWithExtension(inputDir, extensions);
-    mosDepthResultFiles = mosDepthResultFiles.subList(0, 30);
+    mosDepthResultFiles = mosDepthResultFiles.subList(0, 15);
 
     if (mosDepthResultFiles.isEmpty()) {
 
@@ -43,7 +43,7 @@ public class NGSPCA {
 
     List<String> regions = MosdepthUtils.getRegionsToUse(mosDepthResultFiles.get(0),
                                                          REGION_STRATEGY.AUTOSOMAL, log);
-
+    regions = regions.subList(10000, 20000);
     String tmpDm = outputDir + "tmp.mat.ser.gz";
 
     String pcs = outputDir + "svd.pcs.txt";
@@ -53,15 +53,20 @@ public class NGSPCA {
     DenseMatrix64F dm;
     if (!FileOps.fileExists(tmpDm)) {
       dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), log);
+      FileOps.writeSerial(dm, tmpDm, log);
     } else {
-      dm = null;
+      log.info("Loading existing serialized file " + tmpDm);
+      dm = (DenseMatrix64F) FileOps.readSerial(tmpDm, log);
     }
 
     SVD svd = new SVD(samples.toArray(new String[samples.size()]),
                       regions.toArray(new String[regions.size()]));
-    svd.computeSVD(dm, 20, log);
+    svd.computeSVD(dm, 10, log);
+    log.info("Writing to " + pcs);
     svd.dumpPCsToText(pcs, log);
+    log.info("Writing to " + loadings);
     svd.computeAndDumpLoadings(loadings, dm, log);
+    log.info("Writing to " + singularValues);
     svd.dumpSingularValuesToText(singularValues, log);
   }
 

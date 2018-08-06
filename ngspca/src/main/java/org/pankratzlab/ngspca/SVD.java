@@ -64,7 +64,7 @@ class SVD implements Serializable {
       throw new IllegalArgumentException("Mismatched row lengths");
     }
     log.info("Computing EJML PCs");
-    this.svd = new SvdImplicitQrDecompose_D64(false, true, true, true);
+    this.svd = new SvdImplicitQrDecompose_D64(false, false, true, true);
     svd.decompose(dm);
     log.info("Finished Computing EJML PCs");
 
@@ -77,7 +77,7 @@ class SVD implements Serializable {
     this.numComponents = Math.min(numberOfComponentsToStore,
                                   Math.min(svd.getW(null).numRows, svd.getV(null, true).numCols));
     if (numComponents < numberOfComponentsToStore) {
-      log.info(numberOfComponentsToStore + " PCs requested, but will only be able to compute"
+      log.info(numberOfComponentsToStore + " PCs requested, but only be able to compute "
                + numComponents);
     }
     log.info("Subsetting matrices to " + numComponents + " components");
@@ -106,9 +106,9 @@ class SVD implements Serializable {
     //
     DenseMatrix64F v = svd.getV(null, true);
 
-    String[] pcNames = getNumberedColumnHeader("PC", v.getNumCols());
+    String[] pcNames = getNumberedColumnHeader("PC", v.getNumRows());
 
-    dumpMatrix(file, v, "SAMPLE", pcNames, originalColNames, log);
+    dumpMatrix(file, v, "SAMPLE", pcNames, originalColNames, true, log);
   }
 
   /**
@@ -119,7 +119,7 @@ class SVD implements Serializable {
   void computeAndDumpLoadings(String file, DenseMatrix64F dm, Logger log) {
     DenseMatrix64F loadingData = computeLoadings(dm);
     String[] loadingNames = getNumberedColumnHeader("Loading", loadingData.getNumCols());
-    dumpMatrix(file, loadingData, "MARKER", loadingNames, originalRowNames, log);
+    dumpMatrix(file, loadingData, "MARKER", loadingNames, originalRowNames, false, log);
 
   }
 
@@ -153,21 +153,31 @@ class SVD implements Serializable {
   }
 
   private static void dumpMatrix(String file, DenseMatrix64F m, String rowTitle,
-                                 String[] columnNames, String[] rowNames, Logger log) {
+                                 String[] outputColumnNames, String[] outputRowNames,
+                                 boolean transposed, Logger log) {
     try (PrintWriter writer = new PrintWriter(new File(file))) {
 
       StringJoiner joiner = new StringJoiner("\t");
       joiner.add(rowTitle);
-      for (String colName : columnNames) {
+      for (String colName : outputColumnNames) {
         joiner.add(colName);
       }
       writer.println(joiner.toString());
+      log.info(m.getNumRows() + " rows by " + m.getNumCols() + " columns");
+      log.info(outputRowNames.length + " out rows by " + outputColumnNames.length + " out columns");
 
-      for (int i = 0; i < m.getNumRows(); i++) {
+      for (int outputRow = 0; outputRow < outputRowNames.length; outputRow++) {
         StringJoiner sample = new StringJoiner("\t");
-        sample.add(rowNames[i]);
-        for (int j = 0; j < m.getNumCols(); j++) {
-          sample.add(Double.toString(m.get(j, i)));
+        sample.add(outputRowNames[outputRow]);
+        for (int outputColumn = 0; outputColumn < outputColumnNames.length; outputColumn++) {
+
+          //          sample.add(Double.toString(m.get(j, i)));
+          if (transposed) {
+            sample.add(Double.toString(m.get(outputColumn, outputRow)));
+          } else {
+            sample.add(Double.toString(m.get(outputRow, outputColumn)));
+          }
+
         }
         writer.println(sample.toString());
 
@@ -206,6 +216,21 @@ class SVD implements Serializable {
       loading += data[i] * basis[i];
     }
     return loading / singularValue;
+  }
+
+  /**
+   * @param serFile write to this serialized file
+   */
+  void writeSerial(String serFile, Logger log) {
+    FileOps.writeSerial(this, serFile, log);
+  }
+
+  /**
+   * @param serFile
+   * @return {@link SVD}
+   */
+  static SVD readSerial(String serFile, Logger log) {
+    return (SVD) FileOps.readSerial(serFile, log);
   }
 
 }
