@@ -51,6 +51,11 @@ public class NGSPCA implements Serializable {
                                                          REGION_STRATEGY.AUTOSOMAL, log);
 
     String tmpDm = outputDir + "tmp.mat.ser.gz";
+
+    String pcs = outputDir + "svd.pcs.txt";
+    String loadings = outputDir + "svd.loadings.txt";
+    String singularValues = outputDir + "svd.singularvalues.txt";
+
     DenseMatrix64F dm;
     if (!FileOps.fileExists(tmpDm)) {
       dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), log);
@@ -61,6 +66,9 @@ public class NGSPCA implements Serializable {
     SVD svd = new SVD(samples.toArray(new String[samples.size()]),
                       regions.toArray(new String[regions.size()]));
     svd.computeSVD(dm, 20, log);
+    svd.dumpPCsToText(pcs, log);
+    svd.computeAndDumpLoadings(loadings, dm, log);
+    svd.dumpSingularValuesToText(singularValues, log);
   }
 
   public static void main(String[] args) {

@@ -2,13 +2,14 @@ package org.pankratzlab.ngspca;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.charset.Charset;
 import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 import org.ejml.alg.dense.decomposition.svd.SvdImplicitQrDecompose_D64;
 import org.ejml.data.DenseMatrix64F;
 import org.ejml.ops.CommonOps;
@@ -97,23 +98,76 @@ class SVD implements Serializable {
     return singularValues;
   }
 
-  private void dumpPCsToText(String file, Logger log) {
+  /**
+   * @param file dump the PCs to this text file
+   * @param log
+   */
+  void dumpPCsToText(String file, Logger log) {
     //
+    DenseMatrix64F v = svd.getV(null, true);
+
+    String[] pcNames = getNumberedColumnHeader("PC", v.getNumCols());
+
+    dumpMatrix(file, v, "SAMPLE", pcNames, originalColNames, log);
+  }
+
+  /**
+   * @param file loadings will be computed and dumped to this file
+   * @param dm the original {@link DenseMatrix64F}
+   * @param log
+   */
+  void computeAndDumpLoadings(String file, DenseMatrix64F dm, Logger log) {
+    DenseMatrix64F loadingData = computeLoadings(dm);
+    String[] loadingNames = getNumberedColumnHeader("Loading", loadingData.getNumCols());
+    dumpMatrix(file, loadingData, "MARKER", loadingNames, originalRowNames, log);
+
+  }
+
+  /**
+   * @param file singular values will be dumped to this file
+   * @param log
+   */
+  void dumpSingularValuesToText(String file, Logger log) {
+    StringJoiner joiner = new StringJoiner("\n");
+    joiner.add("SINGULAR_VALUES");
+
+    for (int component = 0; component < numComponents; component++) {
+      joiner.add(Double.toString(svd.getW(null).get(component, component)));
+    }
+
+    try {
+      FileUtils.writeStringToFile(new File(file), joiner.toString(), Charset.defaultCharset(),
+                                  false);
+    } catch (IOException e) {
+      log.log(Level.SEVERE, "unable to write to file " + file, e);
+    }
+
+  }
+
+  private static String[] getNumberedColumnHeader(String type, int num) {
+    String[] names = new String[num];
+    for (int i = 0; i < num; i++) {
+      names[i] = type + (i + 1);
+    }
+    return names;
+  }
+
+  private static void dumpMatrix(String file, DenseMatrix64F m, String rowTitle,
+                                 String[] columnNames, String[] rowNames, Logger log) {
     try (PrintWriter writer = new PrintWriter(new File(file))) {
 
       StringJoiner joiner = new StringJoiner("\t");
-      joiner.add("SAMPLE");
-      DenseMatrix64F v = svd.getV(null, true);
-      for (int i = 0; i < v.getNumCols(); i++) {
-        joiner.add("PC" + (i + 1));
+      joiner.add(rowTitle);
+      for (String colName : columnNames) {
+        joiner.add(colName);
       }
       writer.println(joiner.toString());
 
-      for (int i = 0; i < v.getNumRows(); i++) {
+      for (int i = 0; i < m.getNumRows(); i++) {
         StringJoiner sample = new StringJoiner("\t");
-        sample.add(originalColNames[i]);
-        for (int j = 0; j < v.getNumCols(); j++) {
-          sample.add(Double.toString(v.get(j, i)));
+        sample.add(rowNames[i]);
+        for (int j = 0; j < m.getNumCols(); j++) {
+          sample.add(Double.toString(m.get(j, i)));
         }
         writer.println(sample.toString());
 
@@ -123,7 +177,6 @@ class SVD implements Serializable {
       log.log(Level.SEVERE, "unable to write to file " + file, e);
 
     }
-
   }
 
   private DenseMatrix64F computeLoadings(DenseMatrix64F dm) {
