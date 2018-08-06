@@ -1,7 +1,6 @@
 package org.pankratzlab.ngspca;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
@@ -14,12 +13,7 @@ import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 /**
  * A simplified version of BamImport that uses MosDepth output to generate PCS
  */
-public class NGSPCA implements Serializable {
-
-  /**
-   * 
-   */
-  private static final long serialVersionUID = 1L;
+public class NGSPCA {
 
   private static void run(String inputDir, String outputDir, boolean overwrite, Logger log) {
     new File(outputDir).mkdirs();
