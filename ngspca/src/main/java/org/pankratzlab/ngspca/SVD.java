@@ -126,42 +126,33 @@ class SVD implements Serializable {
 
   }
 
-  //  private void computeLoadings(DenseMatrix64F dm) {
-  //    //    Will have all markers, but not all "PCs" all the time
-  //    DenseMatrix64F loadingData = new DenseMatrix64F(dm.numRows, numComponents);
-  //
-  //    Map<String, Integer> rowMap = new HashMap<>();
-  //    for (int row = 0; row < m.getDenseMatrix().numRows; row++) {
-  //      rowMap.put(m.getNameForRowIndex(row), row);
-  //    }
-  //
-  //    Map<String, Integer> loadingMap = new HashMap<>();
-  //    for (int component = 0; component < numComponents; component++) {
-  //      loadingMap.put("LOADING" + component, component);
-  //    }
-  //    for (int row = 0; row < m.getDenseMatrix().numRows; row++) {
-  //
-  //      DenseMatrix64F rowData = new DenseMatrix64F(1, m.getDenseMatrix().numCols);
-  //      CommonOps.extractRow(m.getDenseMatrix(), row, rowData);
-  //
-  //      for (int component = 0; component < numComponents; component++) {
-  //        DenseMatrix64F componentData = new DenseMatrix64F(1, v.getDenseMatrix().numCols);
-  //
-  //        double loading = getLoading(w.getEntry(component, component), rowData.data,
-  //                                    CommonOps.extractRow(v.getDenseMatrix(), component,
-  //                                                         componentData).data);
-  //        loadingData.add(row, component, loading);
-  //      }
-  //    }
-  //    this.loadings = new NamedRealMatrix(rowMap, loadingMap, loadingData);
-  //  }
+  private DenseMatrix64F computeLoadings(DenseMatrix64F dm) {
+    //    Will have all markers, but not all "PCs" all the time
+    DenseMatrix64F loadingData = new DenseMatrix64F(dm.numRows, numComponents);
 
-  //  private static double getLoading(double singularValue, double[] data, double[] basis) {
-  //    double loading = 0;
-  //    for (int i = 0; i < basis.length; i++) {
-  //      loading += data[i] * basis[i];
-  //    }
-  //    return loading / singularValue;
-  //  }
+    for (int row = 0; row < dm.numRows; row++) {
+
+      DenseMatrix64F rowData = new DenseMatrix64F(1, dm.numCols);
+      CommonOps.extractRow(dm, row, rowData);
+
+      for (int component = 0; component < numComponents; component++) {
+        DenseMatrix64F componentData = new DenseMatrix64F(1, svd.getV(null, true).numCols);
+
+        double loading = getLoading(svd.getW(null).get(component, component), rowData.data,
+                                    CommonOps.extractRow(svd.getV(null, true), component,
+                                                         componentData).data);
+        loadingData.add(row, component, loading);
+      }
+    }
+    return loadingData;
+  }
+
+  private static double getLoading(double singularValue, double[] data, double[] basis) {
+    double loading = 0;
+    for (int i = 0; i < basis.length; i++) {
+      loading += data[i] * basis[i];
+    }
+    return loading / singularValue;
+  }
 
 }

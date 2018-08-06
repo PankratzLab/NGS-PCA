@@ -60,7 +60,7 @@ public class NGSPCA implements Serializable {
 
     SVD svd = new SVD(samples.toArray(new String[samples.size()]),
                       regions.toArray(new String[regions.size()]));
-    svd.computeSVD(dm, log);
+    svd.computeSVD(dm, 20, log);
   }
 
   public static void main(String[] args) {
