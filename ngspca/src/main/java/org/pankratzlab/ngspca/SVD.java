@@ -129,10 +129,10 @@ class SVD implements Serializable {
    */
   void dumpSingularValuesToText(String file, Logger log) {
     StringJoiner joiner = new StringJoiner("\n");
-    joiner.add("SINGULAR_VALUES");
+    joiner.add("SINGULAR_VALUES\tPC");
 
     for (int component = 0; component < numComponents; component++) {
-      joiner.add(Double.toString(svd.getW(null).get(component, component)));
+      joiner.add(component + "\t" + Double.toString(svd.getW(null).get(component, component)));
     }
 
     try {
@@ -163,8 +163,8 @@ class SVD implements Serializable {
         joiner.add(colName);
       }
       writer.println(joiner.toString());
-      log.info(m.getNumRows() + " rows by " + m.getNumCols() + " columns");
-      log.info(outputRowNames.length + " out rows by " + outputColumnNames.length + " out columns");
+      log.info(outputRowNames.length + " output rows by " + outputColumnNames.length
+               + " output columns");
 
       for (int outputRow = 0; outputRow < outputRowNames.length; outputRow++) {
         StringJoiner sample = new StringJoiner("\t");

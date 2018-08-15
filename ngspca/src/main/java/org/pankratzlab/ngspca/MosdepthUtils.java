@@ -58,7 +58,7 @@ class MosdepthUtils {
       log.severe(err);
       throw new IllegalArgumentException(err);
     }
-    return loadData(mosDepthResultFiles, ucscRegions, log);
+    return loadAndNormalizeData(mosDepthResultFiles, ucscRegions, log);
   }
 
   /**
@@ -68,8 +68,8 @@ class MosdepthUtils {
    * @return normalized {@link DenseMatrix64F} holding all input files
    */
 
-  private static DenseMatrix64F loadData(List<String> mosDepthResultFiles, Set<String> ucscRegions,
-                                         Logger log) {
+  private static DenseMatrix64F loadAndNormalizeData(List<String> mosDepthResultFiles,
+                                                     Set<String> ucscRegions, Logger log) {
 
     // TODO use map to verify region indices
     log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and "

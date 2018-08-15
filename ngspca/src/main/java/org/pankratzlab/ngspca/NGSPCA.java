@@ -15,7 +15,8 @@ import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
  */
 public class NGSPCA {
 
-  private static void run(String inputDir, String outputDir, boolean overwrite, Logger log) {
+  private static void run(String inputDir, String outputDir, int numPcs, boolean overwrite,
+                          Logger log) {
     new File(outputDir).mkdirs();
 
     String[] extensions = new String[] {MosdepthUtils.MOSDEPHT_BED_EXT};
@@ -61,7 +62,7 @@ public class NGSPCA {
 
     SVD svd = new SVD(samples.toArray(new String[samples.size()]),
                       regions.toArray(new String[regions.size()]));
-    svd.computeSVD(dm, 10, log);
+    svd.computeSVD(dm, numPcs, log);
     log.info("Writing to " + pcs);
     svd.dumpPCsToText(pcs, log);
     log.info("Writing to " + loadings);
@@ -80,9 +81,11 @@ public class NGSPCA {
 
     String inputDir = cmd.getOptionValue(CmdLine.INPUT_DIR_ARG);
     String outputDir = cmd.getOptionValue(CmdLine.OUTPUT_DIR_ARG);
-
     try {
-      run(inputDir, outputDir, cmd.hasOption(CmdLine.OVERWRITE_ARG), log);
+      int numPcs = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_COMPONENTS_ARG,
+                                                       Integer.toString(CmdLine.DEFAULT_PCS)));
+
+      run(inputDir, outputDir, numPcs, cmd.hasOption(CmdLine.OVERWRITE_ARG), log);
     } catch (Exception e) {
       log.log(Level.SEVERE, "an exception was thrown", e);
       log.severe("An exception occured while running\nFeel free to open an issue at https://github.com/PankratzLab/NGS-PCA after reviewing the help message below");

@@ -19,7 +19,8 @@ class CmdLine {
   static final String INPUT_DIR_ARG = "inputDir";
   static final String OUTPUT_DIR_ARG = "outputDir";
   static final String OVERWRITE_ARG = "overwrite";
-
+  static final String NUM_COMPONENTS_ARG = "numComponents";
+  static final int DEFAULT_PCS = 20;
   static final String HELP = "help";
 
   private CmdLine() {
@@ -46,12 +47,19 @@ class CmdLine {
                                       .hasArg()
                                       .desc("PCA results and auxillary files will be placed here")
                                       .required().build();
-
+    final Option numComponents = Option.builder("n").hasArg(true).required()
+                                       .longOpt(NUM_COMPONENTS_ARG).hasArg()
+                                       .desc("The number of PCs to retain (the minimum of this and the number of markers/samples will be retained. Default is "
+                                             + DEFAULT_PCS)
+                                       .required(false).build();
     final Options options = new Options();
+    options.addOption(help);
+
     options.addOption(inputOption);
     options.addOption(outputOption);
-    options.addOption(help);
+    options.addOption(numComponents);
     options.addOption(overwrite);
+
     return options;
   }
 
