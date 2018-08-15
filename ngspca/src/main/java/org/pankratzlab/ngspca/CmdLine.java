@@ -19,7 +19,7 @@ class CmdLine {
   static final String INPUT_DIR_ARG = "inputDir";
   static final String OUTPUT_DIR_ARG = "outputDir";
   static final String OVERWRITE_ARG = "overwrite";
-  static final String NUM_COMPONENTS_ARG = "numComponents";
+  static final String NUM_COMPONENTS_ARG = "numPC";
   static final int DEFAULT_PCS = 20;
   static final String HELP = "help";
 
@@ -34,14 +34,14 @@ class CmdLine {
    */
   static Options generateOptions() {
     final Option help = Option.builder("h").required().longOpt(HELP).hasArg()
-                              .desc("print application usage and exit").hasArg(false)
+                              .desc("Print application usage and exit").hasArg(false)
                               .required(false).build();
     final Option overwrite = Option.builder("r").required().longOpt(OVERWRITE_ARG).hasArg()
-                                   .desc("overwrite existing temporary files and recompute each step")
+                                   .desc("Overwrite existing temporary files and recompute each step")
                                    .hasArg(false).required(false).build();
     final Option inputOption = Option.builder("i").hasArg(true).longOpt(INPUT_DIR_ARG)
                                      .desc("An existing directory containing mosdepth result files (*"
-                                           + MosdepthUtils.MOSDEPHT_BED_EXT + ")")
+                                           + MosdepthUtils.MOSDEPHT_BED_EXT + " extension)")
                                      .required().build();
     final Option outputOption = Option.builder("o").hasArg(true).required().longOpt(OUTPUT_DIR_ARG)
                                       .hasArg()
@@ -49,7 +49,7 @@ class CmdLine {
                                       .required().build();
     final Option numComponents = Option.builder("n").hasArg(true).required()
                                        .longOpt(NUM_COMPONENTS_ARG).hasArg()
-                                       .desc("The number of PCs to retain (the minimum of this and the number of markers/samples will be retained. Default is "
+                                       .desc("The number of PCs to retain - the minimum of this and the number of markers/samples will be retained. Default is "
                                              + DEFAULT_PCS)
                                        .required(false).build();
     final Options options = new Options();

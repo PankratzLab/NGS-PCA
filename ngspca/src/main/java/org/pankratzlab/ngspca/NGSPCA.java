@@ -23,7 +23,7 @@ public class NGSPCA {
 
     // get all files with mosdepth bed extension
     List<String> mosDepthResultFiles = FileOps.listFilesWithExtension(inputDir, extensions);
-    mosDepthResultFiles = mosDepthResultFiles.subList(0, 15);
+    //    mosDepthResultFiles = mosDepthResultFiles.subList(0, 15);
 
     if (mosDepthResultFiles.isEmpty()) {
 
@@ -44,7 +44,7 @@ public class NGSPCA {
 
     List<String> regions = MosdepthUtils.getRegionsToUse(mosDepthResultFiles.get(0),
                                                          REGION_STRATEGY.AUTOSOMAL, log);
-    regions = regions.subList(10000, 20000);
+    //    regions = regions.subList(10000, 20000);
     String tmpDm = outputDir + "tmp.mat.ser.gz";
 
     String pcs = outputDir + "svd.pcs.txt";
