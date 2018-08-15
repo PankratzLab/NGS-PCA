@@ -51,7 +51,7 @@ public class NGSPCA {
     String singularValues = outputDir + "svd.singularvalues.txt";
 
     DenseMatrix64F dm;
-    if (!FileOps.fileExists(tmpDm)) {
+    if (!FileOps.fileExists(tmpDm) || overwrite) {
       dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), log);
       FileOps.writeSerial(dm, tmpDm, log);
     } else {
@@ -90,13 +90,4 @@ public class NGSPCA {
 
     }
   }
-
-  //
-  // SerializedFiles.writeSerial(tm, svdFile, true);
-  // }
-  // log.reportTimeInfo("Loading " + svdFile);
-  // SimpleNGSPCA tm = (SimpleNGSPCA) SerializedFiles.readSerial(svdFile, log,
-  // false);
-  // tm.dumpPCsToText(pcFile);
-  // }
 }
