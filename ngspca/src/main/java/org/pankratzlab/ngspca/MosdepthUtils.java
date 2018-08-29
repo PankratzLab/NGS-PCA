@@ -75,8 +75,7 @@ class MosdepthUtils {
     log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and "
              + ucscRegions.size() + " rows");
 
-    DenseMatrix64F dm = new DenseMatrix64F(1, 1);
-    dm.reshape(ucscRegions.size(), mosDepthResultFiles.size());
+    DenseMatrix64F dm = new DenseMatrix64F(ucscRegions.size(), mosDepthResultFiles.size());
 
     log.info("Starting input processing of " + mosDepthResultFiles.size() + " files");
 
