@@ -192,7 +192,7 @@ class SVD implements Serializable {
   private DenseMatrix64F computeLoadings(DenseMatrix64F dm) {
     //    Will have all markers, but not all "PCs" all the time
     DenseMatrix64F loadingData = new DenseMatrix64F(dm.numRows, numComponents);
-
+    double[] singularValues = getSingularValues();
     for (int row = 0; row < dm.numRows; row++) {
 
       DenseMatrix64F rowData = new DenseMatrix64F(1, dm.numCols);
@@ -201,7 +201,7 @@ class SVD implements Serializable {
       for (int component = 0; component < numComponents; component++) {
         DenseMatrix64F componentData = new DenseMatrix64F(1, svd.getV(null, true).numCols);
 
-        double loading = getLoading(svd.getW(null).get(component, component), rowData.data,
+        double loading = getLoading(singularValues[component], rowData.data,
                                     CommonOps.extractRow(svd.getV(null, true), component,
                                                          componentData).data);
         loadingData.add(row, component, loading);
