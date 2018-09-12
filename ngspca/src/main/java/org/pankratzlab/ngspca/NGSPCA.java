@@ -3,6 +3,7 @@ package org.pankratzlab.ngspca;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -16,7 +17,7 @@ import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 public class NGSPCA {
 
   private static void run(String inputDir, String outputDir, int numPcs, boolean overwrite,
-                          int threads, Logger log) throws InterruptedException {
+                          int threads, Logger log) throws InterruptedException, ExecutionException {
     new File(outputDir).mkdirs();
 
     String[] extensions = new String[] {MosdepthUtils.MOSDEPHT_BED_EXT};

@@ -3,9 +3,13 @@ package org.pankratzlab.ngspca;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,9 +62,11 @@ class MosdepthUtils {
    * @param log
    * @return
    * @throws InterruptedException
+   * @throws ExecutionException
    */
   static DenseMatrix64F processFiles(List<String> mosDepthResultFiles, Set<String> ucscRegions,
-                                     int threads, Logger log) throws InterruptedException {
+                                     int threads,
+                                     Logger log) throws InterruptedException, ExecutionException {
     if (mosDepthResultFiles.isEmpty()) {
       String err = "No input files provided";
       log.severe(err);
@@ -76,11 +82,13 @@ class MosdepthUtils {
    * @param log
    * @return normalized {@link DenseMatrix64F} holding all input files
    * @throws InterruptedException
+   * @throws ExecutionException
    */
 
   private static DenseMatrix64F loadAndNormalizeData(List<String> mosDepthResultFiles,
                                                      Set<String> ucscRegions, int threads,
-                                                     Logger log) throws InterruptedException {
+                                                     Logger log) throws InterruptedException,
+                                                                 ExecutionException {
 
     // TODO use map to verify region indices
     log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and "
@@ -90,28 +98,44 @@ class MosdepthUtils {
 
     log.info("Starting input processing of " + mosDepthResultFiles.size() + " files");
 
-    ExecutorService executor = Executors.newFixedThreadPool(threads);
+    final BlockingQueue<List<BEDFeature>> bq = new ArrayBlockingQueue<List<BEDFeature>>(26);
 
+    ExecutorService executor = Executors.newFixedThreadPool(threads);
+    List<Future<List<BEDFeature>>> futures = new ArrayList<>();
     List<Callable<List<BEDFeature>>> callables = new ArrayList<>();
     for (String mosDepthResultFile : mosDepthResultFiles) {
-      callables.add(() -> BedUtils.loadSpecificRegions(mosDepthResultFile, ucscRegions));
+      System.out.println("adding " + mosDepthResultFile);
+      //      callables.add(() -> BedUtils.loadSpecificRegions(mosDepthResultFile, ucscRegions));
+      futures.add(executor.submit(() -> BedUtils.loadSpecificRegions(mosDepthResultFile,
+                                                                     ucscRegions)));
+      //      bq.p
     }
 
-    final AtomicInteger column = new AtomicInteger(0);
-    try {
-      executor.invokeAll(callables).stream().map(future -> {
-        try {
-          return future.get();
-        } catch (Exception e) {
-          throw new IllegalStateException(e);
-        }
-      }).forEach(features -> setColumnData(dm, column.getAndSet(column.get() + 1),
-                                           mosDepthResultFiles, features, log));
-    } catch (InterruptedException e) {
-      log.log(Level.SEVERE, "an exception was thrown", e);
-      throw e;
+    int col = 0;
+    for (Future<List<BEDFeature>> future : futures) {
+      setColumnData(dm, col, mosDepthResultFiles, future.get(), log);
+      col++;
+      System.out.println(col);
     }
-    executor.shutdown();
+    // rest of the code here.
+    //  }
+    //
+    //  final AtomicInteger column = new AtomicInteger(0);try
+    //  {
+    //    executor.invokeAll(callables).stream().map(future -> {
+    //      try {
+    //        return future.get();
+    //      } catch (Exception e) {
+    //        throw new IllegalStateException(e);
+    //      }
+    //    }).forEach(features -> setColumnData(dm, column.getAndSet(column.get() + 1),
+    //                                         mosDepthResultFiles, features, log));
+    //  }catch(
+    //  InterruptedException e)
+    //  {
+    //    log.log(Level.SEVERE, "an exception was thrown", e);
+    //    throw e;
+    //  }executor.shutdown();
 
     //    for (
     //
