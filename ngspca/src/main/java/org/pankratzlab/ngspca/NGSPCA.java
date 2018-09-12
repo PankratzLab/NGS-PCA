@@ -16,7 +16,7 @@ import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 public class NGSPCA {
 
   private static void run(String inputDir, String outputDir, int numPcs, boolean overwrite,
-                          Logger log) {
+                          int threads, Logger log) throws InterruptedException {
     new File(outputDir).mkdirs();
 
     String[] extensions = new String[] {MosdepthUtils.MOSDEPHT_BED_EXT};
@@ -53,7 +53,8 @@ public class NGSPCA {
 
     DenseMatrix64F dm;
     if (!FileOps.fileExists(tmpDm) || overwrite) {
-      dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), log);
+      dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), threads,
+                                      log);
       FileOps.writeSerial(dm, tmpDm, log);
     } else {
       log.info("Loading existing serialized file " + tmpDm);
@@ -85,7 +86,10 @@ public class NGSPCA {
       int numPcs = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_COMPONENTS_ARG,
                                                        Integer.toString(CmdLine.DEFAULT_PCS)));
 
-      run(inputDir, outputDir, numPcs, cmd.hasOption(CmdLine.OVERWRITE_ARG), log);
+      int threads = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_THREADS_ARG,
+                                                        Integer.toString(CmdLine.DEFAULT_THREADS)));
+
+      run(inputDir, outputDir, numPcs, cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
     } catch (Exception e) {
       log.log(Level.SEVERE, "an exception was thrown", e);
       log.severe("An exception occured while running\nFeel free to open an issue at https://github.com/PankratzLab/NGS-PCA after reviewing the help message below");
