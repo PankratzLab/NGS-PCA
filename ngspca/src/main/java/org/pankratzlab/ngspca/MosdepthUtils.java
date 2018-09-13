@@ -3,14 +3,10 @@ package org.pankratzlab.ngspca;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ejml.data.DenseMatrix64F;
@@ -98,68 +94,27 @@ class MosdepthUtils {
 
     log.info("Starting input processing of " + mosDepthResultFiles.size() + " files");
 
-    final BlockingQueue<List<BEDFeature>> bq = new ArrayBlockingQueue<List<BEDFeature>>(26);
-
     ExecutorService executor = Executors.newFixedThreadPool(threads);
     List<Future<List<BEDFeature>>> futures = new ArrayList<>();
-    List<Callable<List<BEDFeature>>> callables = new ArrayList<>();
     for (String mosDepthResultFile : mosDepthResultFiles) {
-      System.out.println("adding " + mosDepthResultFile);
-      //      callables.add(() -> BedUtils.loadSpecificRegions(mosDepthResultFile, ucscRegions));
       futures.add(executor.submit(() -> BedUtils.loadSpecificRegions(mosDepthResultFile,
                                                                      ucscRegions)));
-      //      bq.p
     }
 
     int col = 0;
     for (Future<List<BEDFeature>> future : futures) {
-      setColumnData(dm, col, mosDepthResultFiles, future.get(), log);
+      setColumnData(dm, col, mosDepthResultFiles.get(col), future.get(), log);
       col++;
-      System.out.println(col);
     }
-    // rest of the code here.
-    //  }
-    //
-    //  final AtomicInteger column = new AtomicInteger(0);try
-    //  {
-    //    executor.invokeAll(callables).stream().map(future -> {
-    //      try {
-    //        return future.get();
-    //      } catch (Exception e) {
-    //        throw new IllegalStateException(e);
-    //      }
-    //    }).forEach(features -> setColumnData(dm, column.getAndSet(column.get() + 1),
-    //                                         mosDepthResultFiles, features, log));
-    //  }catch(
-    //  InterruptedException e)
-    //  {
-    //    log.log(Level.SEVERE, "an exception was thrown", e);
-    //    throw e;
-    //  }executor.shutdown();
-
-    //    for (
-    //
-    //         int col = 0; col < mosDepthResultFiles.size(); col++) {
-    //      if (col % 2 == 0) {
-    //        log.info("Loading file " + Integer.toString(col + 1));
-    //      }
-    //      String inputFile = mosDepthResultFiles.get(col);
-    //      List<BEDFeature> features = BedUtils.loadSpecificRegions(inputFile, ucscRegions);
-    //
-    //      //      setColumnData(dm, col, features);
-    //
-    //    }
     log.info("Normalizing input matrix");
     NormalizationOperations.foldChangeAndCenterRows(dm);
     return dm;
 
   }
 
-  private static void setColumnData(DenseMatrix64F dm, int col, List<String> inputFiles,
+  private static void setColumnData(DenseMatrix64F dm, int col, String inputFile,
                                     List<BEDFeature> features, Logger log) {
-    if (col % 2 == 0) {
-      log.info("Loading file " + Integer.toString(col + 1));
-    }
+    log.info("Setting data for file " + Integer.toString(col + 1));
 
     for (int row = 0; row < features.size(); row++) {
       // mosdepth coverage parsed to "name" by htsjdk
@@ -168,7 +123,7 @@ class MosdepthUtils {
       } catch (NumberFormatException nfe) {
         log.log(Level.SEVERE, "an exception was thrown", nfe);
         throw new IllegalArgumentException("Invalid (non-numeric) coverage value in file "
-                                           + inputFiles.get(col) + " in  row " + row);
+                                           + inputFile + " in  row " + row);
       }
 
     }
