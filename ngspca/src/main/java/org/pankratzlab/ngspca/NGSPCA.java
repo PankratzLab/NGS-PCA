@@ -59,10 +59,7 @@ public class NGSPCA {
                                                          log);
     String tmpDm = outputDir + "tmp.mat.ser.gz";
 
-    String pcs = outputDir + "svd.pcs.txt";
-    String loadings = outputDir + "svd.loadings.txt";
-    String singularValues = outputDir + "svd.singularvalues.txt";
-
+    // populate input matrix and normalize
     DenseMatrix64F dm;
     if (!FileOps.fileExists(tmpDm) || overwrite) {
       dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), threads,
@@ -73,9 +70,16 @@ public class NGSPCA {
       dm = (DenseMatrix64F) FileOps.readSerial(tmpDm, log);
     }
 
+    // perform SVD
     SVD svd = new SVD(samples.toArray(new String[samples.size()]),
                       regions.toArray(new String[regions.size()]));
     svd.computeSVD(dm, numPcs, log);
+
+    // output results
+    String pcs = outputDir + "svd.pcs.txt";
+    String loadings = outputDir + "svd.loadings.txt";
+    String singularValues = outputDir + "svd.singularvalues.txt";
+
     log.info("Writing to " + pcs);
     svd.dumpPCsToText(pcs, log);
     log.info("Writing to " + loadings);
