@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ejml.data.DenseMatrix64F;
+import org.pankratzlab.ngspca.BedUtils.BedRegionResult;
 import htsjdk.tribble.bed.BEDFeature;
 
 /**
@@ -40,14 +41,12 @@ class MosdepthUtils {
 
     log.info("Selecting regions using " + rStrategy + " region strategy");
 
-    switch (rStrategy) {
-      case AUTOSOMAL:
-        return BedUtils.loadAutosomalUCSC(mosDepthResultFile);
-      default:
-        String err = "Invalid region strategy type " + rStrategy;
-        log.severe(err);
-        throw new IllegalArgumentException(err);
-
+    if (rStrategy == REGION_STRATEGY.AUTOSOMAL) {
+      return BedUtils.loadAutosomalUCSC(mosDepthResultFile);
+    } else {
+      String err = "Invalid region strategy type " + rStrategy;
+      log.severe(err);
+      throw new IllegalArgumentException(err);
     }
   }
 
@@ -95,15 +94,21 @@ class MosdepthUtils {
     log.info("Starting input processing of " + mosDepthResultFiles.size() + " files");
 
     ExecutorService executor = Executors.newFixedThreadPool(threads);
-    List<Future<List<BEDFeature>>> futures = new ArrayList<>();
+    List<Future<BedRegionResult>> futures = new ArrayList<>();
     for (String mosDepthResultFile : mosDepthResultFiles) {
       futures.add(executor.submit(() -> BedUtils.loadSpecificRegions(mosDepthResultFile,
                                                                      ucscRegions)));
     }
 
     int col = 0;
-    for (Future<List<BEDFeature>> future : futures) {
-      setColumnData(dm, col, mosDepthResultFiles.get(col), future.get(), log);
+    for (Future<BedRegionResult> future : futures) {
+      BedRegionResult current = future.get();
+      String file = mosDepthResultFiles.get(col);
+      if (!file.equals(current.file)) {
+        throw new IllegalArgumentException("Invalid file returned, expecting " + file + " and got "
+                                           + current.file);
+      }
+      setColumnData(dm, col, mosDepthResultFiles.get(col), current.features, log);
       col++;
     }
     log.info("Normalizing input matrix");

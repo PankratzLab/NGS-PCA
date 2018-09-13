@@ -45,7 +45,6 @@ public class NGSPCA {
 
     List<String> regions = MosdepthUtils.getRegionsToUse(mosDepthResultFiles.get(0),
                                                          REGION_STRATEGY.AUTOSOMAL, log);
-    //    regions = regions.subList(10000, 20000);
     String tmpDm = outputDir + "tmp.mat.ser.gz";
 
     String pcs = outputDir + "svd.pcs.txt";

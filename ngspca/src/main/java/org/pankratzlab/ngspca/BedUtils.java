@@ -47,13 +47,34 @@ public class BedUtils {
    * @param ucscRegions {@link Set} of ucsc formatted regions to load
    * @return
    */
-  static List<BEDFeature> loadSpecificRegions(String file, Set<String> ucscRegions) {
+  static BedRegionResult loadSpecificRegions(String file, Set<String> ucscRegions) {
     BEDFileReader reader = new BEDFileReader(file, false);
     List<BEDFeature> result = reader.iterator().stream()
                                     .filter(bf -> ucscRegions.contains(getBedUCSC(bf)))
                                     .collect(Collectors.toList());
     reader.close();
-    return result;
+
+    return new BedRegionResult(file, result);
+
+  }
+
+  /**
+   * Stores the results of loading a bed file to memory
+   */
+  static class BedRegionResult {
+
+    final String file;
+    final List<BEDFeature> features;
+
+    /**
+     * @param file
+     * @param features
+     */
+    private BedRegionResult(String file, List<BEDFeature> features) {
+      super();
+      this.file = file;
+      this.features = features;
+    }
 
   }
 
