@@ -3,6 +3,7 @@ package org.pankratzlab.ngspca;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -15,15 +16,27 @@ import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
  */
 public class NGSPCA {
 
-  private static void run(String inputDir, String outputDir, int numPcs, boolean overwrite,
-                          Logger log) {
+  /**
+   * @param inputDir directory containing MosDepth results, with extension
+   *          {@link MosdepthUtils#MOSDEPHT_BED_EXT}
+   * @param outputDir where results will be written
+   * @param regionStrategy how to select markers for PCA
+   * @param numPcs number of PCs to retain in the output file
+   * @param overwrite overwrite any existing output
+   * @param threads number of threads for loading bed files
+   * @param log
+   * @throws InterruptedException
+   * @throws ExecutionException
+   */
+  private static void run(String inputDir, String outputDir, REGION_STRATEGY regionStrategy,
+                          int numPcs, boolean overwrite, int threads,
+                          Logger log) throws InterruptedException, ExecutionException {
     new File(outputDir).mkdirs();
 
     String[] extensions = new String[] {MosdepthUtils.MOSDEPHT_BED_EXT};
 
     // get all files with mosdepth bed extension
     List<String> mosDepthResultFiles = FileOps.listFilesWithExtension(inputDir, extensions);
-    //    mosDepthResultFiles = mosDepthResultFiles.subList(0, 15);
 
     if (mosDepthResultFiles.isEmpty()) {
 
@@ -42,27 +55,31 @@ public class NGSPCA {
 
     // load ucsc regions to use
 
-    List<String> regions = MosdepthUtils.getRegionsToUse(mosDepthResultFiles.get(0),
-                                                         REGION_STRATEGY.AUTOSOMAL, log);
-    //    regions = regions.subList(10000, 20000);
+    List<String> regions = MosdepthUtils.getRegionsToUse(mosDepthResultFiles.get(0), regionStrategy,
+                                                         log);
     String tmpDm = outputDir + "tmp.mat.ser.gz";
 
-    String pcs = outputDir + "svd.pcs.txt";
-    String loadings = outputDir + "svd.loadings.txt";
-    String singularValues = outputDir + "svd.singularvalues.txt";
-
+    // populate input matrix and normalize
     DenseMatrix64F dm;
     if (!FileOps.fileExists(tmpDm) || overwrite) {
-      dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), log);
+      dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), threads,
+                                      log);
       FileOps.writeSerial(dm, tmpDm, log);
     } else {
       log.info("Loading existing serialized file " + tmpDm);
       dm = (DenseMatrix64F) FileOps.readSerial(tmpDm, log);
     }
 
+    // perform SVD
     SVD svd = new SVD(samples.toArray(new String[samples.size()]),
                       regions.toArray(new String[regions.size()]));
     svd.computeSVD(dm, numPcs, log);
+
+    // output results
+    String pcs = outputDir + "svd.pcs.txt";
+    String loadings = outputDir + "svd.loadings.txt";
+    String singularValues = outputDir + "svd.singularvalues.txt";
+
     log.info("Writing to " + pcs);
     svd.dumpPCsToText(pcs, log);
     log.info("Writing to " + loadings);
@@ -85,7 +102,11 @@ public class NGSPCA {
       int numPcs = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_COMPONENTS_ARG,
                                                        Integer.toString(CmdLine.DEFAULT_PCS)));
 
-      run(inputDir, outputDir, numPcs, cmd.hasOption(CmdLine.OVERWRITE_ARG), log);
+      int threads = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_THREADS_ARG,
+                                                        Integer.toString(CmdLine.DEFAULT_THREADS)));
+
+      run(inputDir, outputDir, REGION_STRATEGY.AUTOSOMAL, numPcs,
+          cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
     } catch (Exception e) {
       log.log(Level.SEVERE, "an exception was thrown", e);
       log.severe("An exception occured while running\nFeel free to open an issue at https://github.com/PankratzLab/NGS-PCA after reviewing the help message below");
