@@ -16,15 +16,27 @@ import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
  */
 public class NGSPCA {
 
-  private static void run(String inputDir, String outputDir, int numPcs, boolean overwrite,
-                          int threads, Logger log) throws InterruptedException, ExecutionException {
+  /**
+   * @param inputDir directory containing MosDepth results, with extension
+   *          {@link MosdepthUtils#MOSDEPHT_BED_EXT}
+   * @param outputDir where results will be written
+   * @param regionStrategy how to select markers for PCA
+   * @param numPcs number of PCs to retain in the output file
+   * @param overwrite overwrite any existing output
+   * @param threads number of threads for loading bed files
+   * @param log
+   * @throws InterruptedException
+   * @throws ExecutionException
+   */
+  private static void run(String inputDir, String outputDir, REGION_STRATEGY regionStrategy,
+                          int numPcs, boolean overwrite, int threads,
+                          Logger log) throws InterruptedException, ExecutionException {
     new File(outputDir).mkdirs();
 
     String[] extensions = new String[] {MosdepthUtils.MOSDEPHT_BED_EXT};
 
     // get all files with mosdepth bed extension
     List<String> mosDepthResultFiles = FileOps.listFilesWithExtension(inputDir, extensions);
-    //    mosDepthResultFiles = mosDepthResultFiles.subList(0, 15);
 
     if (mosDepthResultFiles.isEmpty()) {
 
@@ -43,8 +55,8 @@ public class NGSPCA {
 
     // load ucsc regions to use
 
-    List<String> regions = MosdepthUtils.getRegionsToUse(mosDepthResultFiles.get(0),
-                                                         REGION_STRATEGY.AUTOSOMAL, log);
+    List<String> regions = MosdepthUtils.getRegionsToUse(mosDepthResultFiles.get(0), regionStrategy,
+                                                         log);
     String tmpDm = outputDir + "tmp.mat.ser.gz";
 
     String pcs = outputDir + "svd.pcs.txt";
@@ -89,7 +101,8 @@ public class NGSPCA {
       int threads = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_THREADS_ARG,
                                                         Integer.toString(CmdLine.DEFAULT_THREADS)));
 
-      run(inputDir, outputDir, numPcs, cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
+      run(inputDir, outputDir, REGION_STRATEGY.AUTOSOMAL, numPcs,
+          cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
     } catch (Exception e) {
       log.log(Level.SEVERE, "an exception was thrown", e);
       log.severe("An exception occured while running\nFeel free to open an issue at https://github.com/PankratzLab/NGS-PCA after reviewing the help message below");
