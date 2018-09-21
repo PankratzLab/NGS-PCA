@@ -3,10 +3,8 @@ package org.pankratzlab.ngspca;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,7 +40,7 @@ public class NGSPCA {
     String[] extensions = new String[] {MosdepthUtils.MOSDEPHT_BED_EXT};
 
     // get all files with mosdepth bed extension
-    List<String> mosDepthResultFiles = new ArrayList<>();
+    List<String> mosDepthResultFiles;
     if (FileOps.isDir(input) && FileOps.dirExists(input)) {
       log.info("Detected " + input + " is a directory, searching for "
                + MosdepthUtils.MOSDEPHT_BED_EXT + " extensions");
@@ -51,10 +49,9 @@ public class NGSPCA {
       log.info("Detected " + input + " is a file, reading mosdepth result file paths");
       mosDepthResultFiles = FileOps.readFile(input);
     } else {
-      String err = "Invalid or non-existent input argument ";
+      String err = "Invalid or non-existent input argument " + input;
       log.severe(err);
       throw new IllegalArgumentException(err);
-
     }
 
     if (mosDepthResultFiles.isEmpty()) {
