@@ -4,9 +4,11 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
@@ -18,6 +20,10 @@ import java.util.logging.Logger;
 
 public class FileOps {
 
+  private FileOps() {
+
+  }
+
   static String stripDirectoryAndExtension(String path, String extension) {
 
     return FilenameUtils.getName(path).replaceAll(extension, "");
@@ -28,9 +34,18 @@ public class FileOps {
     return f.exists() && !f.isDirectory();
   }
 
-  static List<String> listFilesWithExtension(String inputDir, String[] extensions) {
-    return FileUtils.listFiles(new File(inputDir), extensions, true).stream()
-                    .map(File::getAbsolutePath).collect(Collectors.toList());
+  static boolean isDir(String path) {
+    File f = new File(path);
+    return f.isDirectory();
+  }
+
+  static List<String> readFile(String path) throws IOException {
+    return FileUtils.readLines(new File(path), Charset.defaultCharset());
+  }
+
+  static List<String> listFilesWithExtension(String dir, String[] extensions) {
+    return FileUtils.listFiles(new File(dir), extensions, true).stream().map(File::getAbsolutePath)
+                    .collect(Collectors.toList());
   }
 
   static boolean writeSerial(Object o, String filename, Logger log) {

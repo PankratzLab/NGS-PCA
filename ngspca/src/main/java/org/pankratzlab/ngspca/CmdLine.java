@@ -17,6 +17,7 @@ import org.apache.commons.cli.ParseException;
 class CmdLine {
 
   static final String INPUT_DIR_ARG = "inputDir";
+  static final String INPUT_FILE_ARG = "inputFile";
   static final String OUTPUT_DIR_ARG = "outputDir";
   static final String OVERWRITE_ARG = "overwrite";
   static final String NUM_COMPONENTS_ARG = "numPC";
@@ -47,6 +48,12 @@ class CmdLine {
                                      .desc("An existing directory containing mosdepth result files (*"
                                            + MosdepthUtils.MOSDEPHT_BED_EXT + " extension)")
                                      .required().build();
+    final Option inputFileOption = Option.builder("f").hasArg(true).longOpt(INPUT_FILE_ARG)
+                                         .desc("A file containing paths to mosdepth result files, one result file per line (*"
+                                               + MosdepthUtils.MOSDEPHT_BED_EXT
+                                               + " extension). If provided, this will override "
+                                               + INPUT_DIR_ARG)
+                                         .required(false).build();
     final Option outputOption = Option.builder("o").hasArg(true).required().longOpt(OUTPUT_DIR_ARG)
                                       .hasArg()
                                       .desc("PCA results and auxillary files will be placed here")
@@ -67,6 +74,7 @@ class CmdLine {
     options.addOption(help);
 
     options.addOption(inputOption);
+    options.addOption(inputFileOption);
     options.addOption(outputOption);
     options.addOption(numComponents);
     options.addOption(numThreads);

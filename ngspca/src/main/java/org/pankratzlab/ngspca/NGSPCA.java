@@ -1,8 +1,12 @@
 package org.pankratzlab.ngspca;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,7 +21,7 @@ import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 public class NGSPCA {
 
   /**
-   * @param inputDir directory containing MosDepth results, with extension
+   * @param input directory or file listing full paths containing MosDepth results, with extension
    *          {@link MosdepthUtils#MOSDEPHT_BED_EXT}
    * @param outputDir where results will be written
    * @param regionStrategy how to select markers for PCA
@@ -27,16 +31,25 @@ public class NGSPCA {
    * @param log
    * @throws InterruptedException
    * @throws ExecutionException
+   * @throws IOException
    */
-  private static void run(String inputDir, String outputDir, REGION_STRATEGY regionStrategy,
+  private static void run(String input, String outputDir, REGION_STRATEGY regionStrategy,
                           int numPcs, boolean overwrite, int threads,
-                          Logger log) throws InterruptedException, ExecutionException {
+                          Logger log) throws InterruptedException, ExecutionException, IOException {
     new File(outputDir).mkdirs();
 
     String[] extensions = new String[] {MosdepthUtils.MOSDEPHT_BED_EXT};
 
     // get all files with mosdepth bed extension
-    List<String> mosDepthResultFiles = FileOps.listFilesWithExtension(inputDir, extensions);
+    List<String> mosDepthResultFiles = new ArrayList<>();
+    if (FileOps.isDir(input)) {
+      log.info("Detected " + input + " is a directory, searching for "
+               + MosdepthUtils.MOSDEPHT_BED_EXT + " extensions");
+      mosDepthResultFiles = FileOps.listFilesWithExtension(input, extensions);
+    } else if (FileOps.fileExists(input)) {
+      log.info("Detected " + input + " is a file, reading mosdepth result file paths");
+      mosDepthResultFiles = FileOps.readFile(input);
+    }
 
     if (mosDepthResultFiles.isEmpty()) {
 
@@ -44,8 +57,7 @@ public class NGSPCA {
       log.severe(err);
       throw new IllegalArgumentException(err);
     } else {
-      log.info("Detected " + mosDepthResultFiles.size() + " mosdepth input files in " + inputDir
-               + " with extension \"" + MosdepthUtils.MOSDEPHT_BED_EXT + "\"");
+      log.info("Detected " + mosDepthResultFiles.size() + " mosdepth input files in " + input);
     }
     // parse sample names from files
     List<String> samples = mosDepthResultFiles.stream()
