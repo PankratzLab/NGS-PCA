@@ -123,13 +123,7 @@ public class NGSPCA {
       System.exit(1);
     }
 
-    if (!cmd.hasOption(CmdLine.INPUT_DIR_ARG) && !cmd.hasOption(CmdLine.INPUT_FILE_ARG)) {
-      log.severe("Either " + CmdLine.INPUT_DIR_ARG + " or " + CmdLine.INPUT_FILE_ARG
-                 + " must be provided");
-      CmdLine.printHelp(log, CmdLine.generateOptions());
-      System.exit(1);
-    }
-    String input = cmd.getOptionValue(CmdLine.INPUT_DIR_ARG);
+    String input = cmd.getOptionValue(CmdLine.INPUT_ARG);
     String outputDir = cmd.getOptionValue(CmdLine.OUTPUT_DIR_ARG);
     try {
       int numPcs = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_COMPONENTS_ARG,
