@@ -43,18 +43,23 @@ public class NGSPCA {
 
     // get all files with mosdepth bed extension
     List<String> mosDepthResultFiles = new ArrayList<>();
-    if (FileOps.isDir(input)) {
+    if (FileOps.isDir(input) && FileOps.dirExists(input)) {
       log.info("Detected " + input + " is a directory, searching for "
                + MosdepthUtils.MOSDEPHT_BED_EXT + " extensions");
       mosDepthResultFiles = FileOps.listFilesWithExtension(input, extensions);
     } else if (FileOps.fileExists(input)) {
       log.info("Detected " + input + " is a file, reading mosdepth result file paths");
       mosDepthResultFiles = FileOps.readFile(input);
+    } else {
+      String err = "Invalid or non-existent input argument ";
+      log.severe(err);
+      throw new IllegalArgumentException(err);
+
     }
 
     if (mosDepthResultFiles.isEmpty()) {
 
-      String err = "No input files provided";
+      String err = "No input files were found";
       log.severe(err);
       throw new IllegalArgumentException(err);
     } else {

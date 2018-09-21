@@ -34,6 +34,11 @@ public class FileOps {
     return f.exists() && !f.isDirectory();
   }
 
+  static boolean dirExists(String path) {
+    File f = new File(path);
+    return f.isDirectory() && f.exists();
+  }
+
   static boolean isDir(String path) {
     File f = new File(path);
     return f.isDirectory();
