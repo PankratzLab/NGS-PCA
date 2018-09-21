@@ -20,7 +20,7 @@ class CmdLine {
   static final String OUTPUT_DIR_ARG = "outputDir";
   static final String OVERWRITE_ARG = "overwrite";
   static final String NUM_COMPONENTS_ARG = "numPC";
-  static final String NUM_THREADS_ARG = "numThreads";
+  static final String NUM_THREADS_ARG = "threads";
   static final String NUM_SAMPLE_ARG = "sampleEvery";
 
   static final int DEFAULT_PCS = 20;
@@ -62,8 +62,8 @@ class CmdLine {
                                              + DEFAULT_PCS)
                                        .required(false).build();
 
-    final Option numThreads = Option.builder("t").hasArg(true).required()
-                                    .longOpt(NUM_COMPONENTS_ARG).hasArg()
+    final Option numThreads = Option.builder("t").hasArg(true).required().longOpt(NUM_THREADS_ARG)
+                                    .hasArg()
                                     .desc("Number of threads to utilize when loading data. Default is "
                                           + DEFAULT_THREADS)
                                     .required(false).build();
