@@ -26,6 +26,7 @@ public class NGSPCA {
    * @param outputDir where results will be written
    * @param regionStrategy how to select markers for PCA
    * @param numPcs number of PCs to retain in the output file
+   * @param sampleAt sample the mosdepth bins, once per this number
    * @param overwrite overwrite any existing output
    * @param threads number of threads for loading bed files
    * @param log
@@ -34,7 +35,7 @@ public class NGSPCA {
    * @throws IOException
    */
   private static void run(String input, String outputDir, REGION_STRATEGY regionStrategy,
-                          int numPcs, boolean overwrite, int threads,
+                          int numPcs, int sampleAt, boolean overwrite, int threads,
                           Logger log) throws InterruptedException, ExecutionException, IOException {
     new File(outputDir).mkdirs();
 
@@ -69,6 +70,20 @@ public class NGSPCA {
 
     List<String> regions = MosdepthUtils.getRegionsToUse(mosDepthResultFiles.get(0), regionStrategy,
                                                          log);
+    if (sampleAt > 1) {
+      log.info("Sampling the" + regions.size() + " mosdepth regions once every " + sampleAt
+               + " bins");
+      List<String> tmp = new ArrayList<>();
+
+      for (int i = 0; i < regions.size(); i++) {
+        if (i % sampleAt == 0) {
+          tmp.add(regions.get(i));
+        }
+      }
+      regions = tmp;
+      log.info("Sampled " + regions.size() + " bins");
+
+    }
     String tmpDm = outputDir + "tmp.mat.ser.gz";
 
     // populate input matrix and normalize
@@ -108,7 +123,13 @@ public class NGSPCA {
       System.exit(1);
     }
 
-    String inputDir = cmd.getOptionValue(CmdLine.INPUT_DIR_ARG);
+    if (!cmd.hasOption(CmdLine.INPUT_DIR_ARG) && !cmd.hasOption(CmdLine.INPUT_FILE_ARG)) {
+      log.severe("Either " + CmdLine.INPUT_DIR_ARG + " or " + CmdLine.INPUT_FILE_ARG
+                 + " must be provided");
+      CmdLine.printHelp(log, CmdLine.generateOptions());
+      System.exit(1);
+    }
+    String input = cmd.getOptionValue(CmdLine.INPUT_DIR_ARG);
     String outputDir = cmd.getOptionValue(CmdLine.OUTPUT_DIR_ARG);
     try {
       int numPcs = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_COMPONENTS_ARG,
@@ -117,7 +138,9 @@ public class NGSPCA {
       int threads = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_THREADS_ARG,
                                                         Integer.toString(CmdLine.DEFAULT_THREADS)));
 
-      run(inputDir, outputDir, REGION_STRATEGY.AUTOSOMAL, numPcs,
+      int sampleAt = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_SAMPLE_ARG,
+                                                         Integer.toString(CmdLine.DEFAULT_SAMPLE)));
+      run(input, outputDir, REGION_STRATEGY.AUTOSOMAL, numPcs, sampleAt,
           cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
     } catch (Exception e) {
       log.log(Level.SEVERE, "an exception was thrown", e);

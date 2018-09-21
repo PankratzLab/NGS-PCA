@@ -22,8 +22,11 @@ class CmdLine {
   static final String OVERWRITE_ARG = "overwrite";
   static final String NUM_COMPONENTS_ARG = "numPC";
   static final String NUM_THREADS_ARG = "numThreads";
+  static final String NUM_SAMPLE_ARG = "sampleEvery";
 
   static final int DEFAULT_PCS = 20;
+  static final int DEFAULT_SAMPLE = 1;
+
   static final int DEFAULT_THREADS = 4;
 
   static final String HELP = "help";
@@ -46,13 +49,15 @@ class CmdLine {
                                    .hasArg(false).required(false).build();
     final Option inputOption = Option.builder("i").hasArg(true).longOpt(INPUT_DIR_ARG)
                                      .desc("An existing directory containing mosdepth result files (*"
-                                           + MosdepthUtils.MOSDEPHT_BED_EXT + " extension)")
-                                     .required().build();
+                                           + MosdepthUtils.MOSDEPHT_BED_EXT
+                                           + " extension). Either this or the " + INPUT_FILE_ARG
+                                           + " must be specified")
+                                     .required(false).build();
     final Option inputFileOption = Option.builder("f").hasArg(true).longOpt(INPUT_FILE_ARG)
                                          .desc("A file containing paths to mosdepth result files, one result file per line (*"
                                                + MosdepthUtils.MOSDEPHT_BED_EXT
-                                               + " extension). If provided, this will override "
-                                               + INPUT_DIR_ARG)
+                                               + " extension). Either this or the " + INPUT_DIR_ARG
+                                               + " must be specified")
                                          .required(false).build();
     final Option outputOption = Option.builder("o").hasArg(true).required().longOpt(OUTPUT_DIR_ARG)
                                       .hasArg()
@@ -70,6 +75,13 @@ class CmdLine {
                                           + DEFAULT_THREADS)
                                     .required(false).build();
 
+    final Option sampleEvery = Option.builder("s").hasArg(true).required().longOpt(NUM_SAMPLE_ARG)
+                                     .hasArg()
+                                     .desc("Sample mosdepth bins. For example, --" + NUM_SAMPLE_ARG
+                                           + " 10 would select every tenth bin. Default is "
+                                           + DEFAULT_SAMPLE + "(use every bin)")
+                                     .required(false).build();
+
     final Options options = new Options();
     options.addOption(help);
 
@@ -78,6 +90,8 @@ class CmdLine {
     options.addOption(outputOption);
     options.addOption(numComponents);
     options.addOption(numThreads);
+    options.addOption(sampleEvery);
+
     options.addOption(overwrite);
 
     return options;
