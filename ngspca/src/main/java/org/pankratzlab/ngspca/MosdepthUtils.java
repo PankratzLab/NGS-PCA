@@ -113,6 +113,7 @@ class MosdepthUtils {
     }
     log.info("Normalizing input matrix");
     NormalizationOperations.foldChangeAndCenterRows(dm);
+    executor.shutdown();
     return dm;
 
   }
