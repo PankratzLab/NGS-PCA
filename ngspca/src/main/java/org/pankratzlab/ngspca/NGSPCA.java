@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.apache.commons.cli.CommandLine;
 import org.ejml.data.DenseMatrix64F;
 import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
@@ -75,14 +76,8 @@ public class NGSPCA {
     if (sampleAt > 1) {
       log.info("Sampling the" + regions.size() + " mosdepth regions once every " + sampleAt
                + " bins");
-      List<String> tmp = new ArrayList<>();
-
-      for (int i = 0; i < regions.size(); i++) {
-        if (i % sampleAt == 0) {
-          tmp.add(regions.get(i));
-        }
-      }
-      regions = tmp;
+      regions = IntStream.range(0, regions.size()).filter(n -> n % sampleAt == 0)
+                         .mapToObj(regions::get).collect(Collectors.toList());
       log.info("Sampled " + regions.size() + " bins");
 
     }
