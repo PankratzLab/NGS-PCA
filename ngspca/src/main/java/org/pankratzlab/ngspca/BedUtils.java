@@ -2,11 +2,16 @@ package org.pankratzlab.ngspca;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.samtools.util.Locatable;
+import htsjdk.samtools.util.OverlapDetector;
 import htsjdk.tribble.AbstractFeatureReader;
 import htsjdk.tribble.FeatureReader;
 import htsjdk.tribble.TribbleException;
@@ -140,5 +145,31 @@ public class BedUtils {
       }
     }
 
+  }
+
+  /**
+   * Helper to test for overlapping regions sourced from a bed file
+   */
+  static class BEDOverlapper {
+
+    private OverlapDetector<BEDFeature> detector;
+
+    /**
+     * @param bedFile
+     */
+    BEDOverlapper(String bedFile, Logger log) {
+      super();
+      if (bedFile != null && FileOps.fileExists(bedFile)) {
+        List<BEDFeature> regions = loadAll(bedFile);
+        log.info("Loaded " + regions.size() + " regions to detect overlaps from " + bedFile);
+        detector = OverlapDetector.create(loadAll(bedFile));
+      } else {
+        detector = OverlapDetector.create(new ArrayList<>());
+      }
+    }
+
+    boolean anyOverlap(Locatable query) {
+      return detector.overlapsAny(query);
+    }
   }
 }
