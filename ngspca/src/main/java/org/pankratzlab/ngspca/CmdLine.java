@@ -22,9 +22,11 @@ class CmdLine {
   static final String NUM_COMPONENTS_ARG = "numPC";
   static final String NUM_THREADS_ARG = "threads";
   static final String NUM_SAMPLE_ARG = "sampleEvery";
+  static final String EXCLUDE_BED_FILE = "bedExclude";
 
   static final int DEFAULT_PCS = 20;
   static final int DEFAULT_SAMPLE = 1;
+  static final String DEFAULT_EXCLUDE_BED_FILE = null;
 
   static final int DEFAULT_THREADS = 4;
 
@@ -75,6 +77,12 @@ class CmdLine {
                                            + DEFAULT_SAMPLE + "(use every bin)")
                                      .required(false).build();
 
+    final Option bedExcludes = Option.builder("b").hasArg(true).required().longOpt(EXCLUDE_BED_FILE)
+                                     .hasArg()
+                                     .desc("Optional: Provide a file to exclude specific regions from PCA input, prior to sampling with "
+                                           + NUM_SAMPLE_ARG)
+                                     .required(false).build();
+
     final Options options = new Options();
     options.addOption(help);
 
@@ -83,6 +91,7 @@ class CmdLine {
     options.addOption(numComponents);
     options.addOption(numThreads);
     options.addOption(sampleEvery);
+    options.addOption(bedExcludes);
 
     options.addOption(overwrite);
 
