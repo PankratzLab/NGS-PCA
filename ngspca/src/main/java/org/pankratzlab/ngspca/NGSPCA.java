@@ -2,7 +2,6 @@ package org.pankratzlab.ngspca;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -12,6 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.cli.CommandLine;
 import org.ejml.data.DenseMatrix64F;
+import org.pankratzlab.ngspca.BedUtils.BEDOverlapDetector;
 import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 
 /**
@@ -23,6 +23,7 @@ public class NGSPCA {
    * @param input directory or file listing full paths containing MosDepth results, with extension
    *          {@link MosdepthUtils#MOSDEPHT_BED_EXT}
    * @param outputDir where results will be written
+   * @param bedExclude if not null, regions overlapping this bed file will not be included
    * @param regionStrategy how to select markers for PCA
    * @param numPcs number of PCs to retain in the output file
    * @param sampleAt sample the mosdepth bins, once per this number
@@ -33,8 +34,9 @@ public class NGSPCA {
    * @throws ExecutionException
    * @throws IOException
    */
-  private static void run(String input, String outputDir, REGION_STRATEGY regionStrategy,
-                          int numPcs, int sampleAt, boolean overwrite, int threads,
+  private static void run(String input, String outputDir, String bedExclude,
+                          REGION_STRATEGY regionStrategy, int numPcs, int sampleAt,
+                          boolean overwrite, int threads,
                           Logger log) throws InterruptedException, ExecutionException, IOException {
     new File(outputDir).mkdirs();
 
@@ -71,8 +73,10 @@ public class NGSPCA {
 
     // load ucsc regions to use
 
+    BEDOverlapDetector overlapDetector = new BEDOverlapDetector(bedExclude, log);
     List<String> regions = MosdepthUtils.getRegionsToUse(mosDepthResultFiles.get(0), regionStrategy,
-                                                         log);
+                                                         overlapDetector, log);
+    log.info(overlapDetector.getNumExcluded() + " regions removed during up-front filtering");
     if (sampleAt > 1) {
       log.info("Sampling the" + regions.size() + " mosdepth regions once every " + sampleAt
                + " bins");
@@ -122,6 +126,7 @@ public class NGSPCA {
 
     String input = cmd.getOptionValue(CmdLine.INPUT_ARG);
     String outputDir = cmd.getOptionValue(CmdLine.OUTPUT_DIR_ARG);
+
     try {
       int numPcs = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_COMPONENTS_ARG,
                                                        Integer.toString(CmdLine.DEFAULT_PCS)));
@@ -131,7 +136,10 @@ public class NGSPCA {
 
       int sampleAt = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_SAMPLE_ARG,
                                                          Integer.toString(CmdLine.DEFAULT_SAMPLE)));
-      run(input, outputDir, REGION_STRATEGY.AUTOSOMAL, numPcs, sampleAt,
+
+      String bedExclude = cmd.getOptionValue(CmdLine.EXCLUDE_BED_FILE,
+                                             CmdLine.DEFAULT_EXCLUDE_BED_FILE);
+      run(input, outputDir, bedExclude, REGION_STRATEGY.AUTOSOMAL, numPcs, sampleAt,
           cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
     } catch (Exception e) {
       log.log(Level.SEVERE, "an exception was thrown", e);

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.samtools.util.Locatable;
@@ -26,10 +25,13 @@ public class BedUtils {
 
   /**
    * @param file load autosomal {@link BEDFeature}s from this file and convert to UCSC format
+   * @param excluder autosomal regions that return true for
+   *          {@link BEDOverlapDetector#overlapsAny(Locatable)} will not be included
    * @return {@link List} of ucsc regions
    */
-  static List<String> loadAutosomalUCSC(String file) {
-    return BedUtils.loadAll(file).stream().filter(BedUtils::autosomal).map(BedUtils::getBedUCSC)
+  static List<String> loadAutosomalUCSC(String file, BEDOverlapDetector excluder) {
+    return BedUtils.loadAll(file).stream().filter(BedUtils::autosomal)
+                   .filter(excluder::overlapsNone).map(BedUtils::getBedUCSC)
                    .collect(Collectors.toList());
   }
 
@@ -150,16 +152,23 @@ public class BedUtils {
   /**
    * Helper to test for overlapping regions sourced from a bed file
    */
-  static class BEDOverlapDetectorr {
+  static class BEDOverlapDetector {
 
     private OverlapDetector<BEDFeature> detector;
+    private int numOverlapped;
 
     /**
      * @param bedFile
      */
-    BEDOverlapDetectorr(String bedFile, Logger log) {
+    BEDOverlapDetector(String bedFile, Logger log) {
       super();
-      if (bedFile != null && FileOps.fileExists(bedFile)) {
+      numOverlapped = 0;
+      if (bedFile != null) {
+        if (!FileOps.fileExists(bedFile)) {
+          String err = "BED file to exclude did not exist: " + bedFile;
+          log.severe(err);
+          throw new IllegalArgumentException(err);
+        }
         List<BEDFeature> regions = loadAll(bedFile);
         log.info("Loaded " + regions.size() + " regions to detect overlaps from " + bedFile);
         detector = OverlapDetector.create(loadAll(bedFile));
@@ -168,8 +177,24 @@ public class BedUtils {
       }
     }
 
-    boolean anyOverlap(Locatable query) {
-      return detector.overlapsAny(query);
+    boolean overlapsAny(Locatable query) {
+      boolean olap = detector.overlapsAny(query);
+      if (olap) {
+        numOverlapped++;
+      }
+      return olap;
     }
+
+    boolean overlapsNone(Locatable query) {
+      return !overlapsAny(query);
+    }
+
+    /**
+     * @return the numExcluded
+     */
+    int getNumExcluded() {
+      return numOverlapped;
+    }
+
   }
 }

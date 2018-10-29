@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ejml.data.DenseMatrix64F;
+import org.pankratzlab.ngspca.BedUtils.BEDOverlapDetector;
 import org.pankratzlab.ngspca.BedUtils.BedRegionResult;
 import htsjdk.tribble.bed.BEDFeature;
 
@@ -33,16 +34,17 @@ class MosdepthUtils {
   /**
    * @param mosDepthResultFile an example file to load regions from
    * @param rStrategy {@link REGION_STRATEGY} to use
+   * @param excluder autosomal regions that return true for
    * @param log
    * @return {@link List} of regions
    */
   static List<String> getRegionsToUse(String mosDepthResultFile, REGION_STRATEGY rStrategy,
-                                      Logger log) {
+                                      BEDOverlapDetector excluder, Logger log) {
 
     log.info("Selecting regions using " + rStrategy + " region strategy");
 
     if (rStrategy == REGION_STRATEGY.AUTOSOMAL) {
-      return BedUtils.loadAutosomalUCSC(mosDepthResultFile);
+      return BedUtils.loadAutosomalUCSC(mosDepthResultFile, excluder);
     } else {
       String err = "Invalid region strategy type " + rStrategy;
       log.severe(err);
