@@ -150,14 +150,14 @@ public class BedUtils {
   /**
    * Helper to test for overlapping regions sourced from a bed file
    */
-  static class BEDOverlapper {
+  static class BEDOverlapDetectorr {
 
     private OverlapDetector<BEDFeature> detector;
 
     /**
      * @param bedFile
      */
-    BEDOverlapper(String bedFile, Logger log) {
+    BEDOverlapDetectorr(String bedFile, Logger log) {
       super();
       if (bedFile != null && FileOps.fileExists(bedFile)) {
         List<BEDFeature> regions = loadAll(bedFile);
