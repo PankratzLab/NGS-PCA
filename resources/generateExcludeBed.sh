@@ -39,12 +39,29 @@ bedtools merge -i GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_150.$
 ## Download sv_blacklist.bed http://cf.10xgenomics.com/supp/genome/GRCh38/sv_blacklist.bed
 
 cut -f 1-3 sv_blacklist.bed >ngs_pca_exclude.sv_blacklist.map.$threshold.bed
+
 cat GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_150.$threshold.merge.bed >>ngs_pca_exclude.sv_blacklist.map.$threshold.bed
 
 sort -k1,1 -k2,2n ngs_pca_exclude.bed > ngs_pca_exclude.sv_blacklist.map.$threshold.sorted.bed
 
 bedtools merge -i ngs_pca_exclude.sorted.bed >  ngs_pca_exclude.sv_blacklist.map.$threshold.sorted.merge.bed
 
-gzip ngs_pca_exclude.sv_blacklist.map.$threshold.sorted.merge.bed
+cp ngs_pca_exclude.sv_blacklist.map.$threshold.sorted.merge.bed ~/git/NGS-PCA/resources
 
-cp ngs_pca_exclude.sv_blacklist.map.$threshold.sorted.merge.bed.gz /Users/Kitty/git/NGS-PCA/resources
+gzip ~/git/NGS-PCA/resources/ngs_pca_exclude.sv_blacklist.map.$threshold.sorted.merge.bed
+
+
+#Download DGV database wget "http://dgv.tcag.ca/dgv/docs/GRCh38_hg38_variants_2016-08-31.txt"
+
+awk '{print "chr"$2"\t"$3"\t"$4}' GRCh38_hg38_variants_2016-08-31.txt |grep -v "start" > ngs_pca_exclude.sv_blacklist.map.$threshold.dgv.bed
+cat ngs_pca_exclude.sv_blacklist.map.$threshold.sorted.merge.bed >> ngs_pca_exclude.sv_blacklist.map.$threshold.dgv.bed
+
+sort -k1,1 -k2,2n ngs_pca_exclude.sv_blacklist.map.$threshold.dgv.bed > ngs_pca_exclude.sv_blacklist.map.$threshold.dgv.sorted.bed
+
+bedtools merge -i ngs_pca_exclude.sv_blacklist.map.$threshold.dgv.sorted.bed > ngs_pca_exclude.sv_blacklist.map.$threshold.dgv.sorted.merge.bed
+
+cp ngs_pca_exclude.sv_blacklist.map.$threshold.dgv.sorted.merge.bed ~/git/NGS-PCA/resources
+
+gzip ~/git/NGS-PCA/resources/ngs_pca_exclude.sv_blacklist.map.$threshold.dgv.sorted.merge.bed
+
+
