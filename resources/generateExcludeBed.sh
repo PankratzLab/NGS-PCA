@@ -28,7 +28,7 @@
 ## Extract regions of poor mappability
 
 
-threshold=0.75
+threshold=1.0
 
 # Pull out regions with mappability < threshold
 awk -v threshold="$threshold" '$5 < threshold {print}' GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_150.bed |cut -f 1-3 > GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_150.$threshold.bed
@@ -38,11 +38,13 @@ bedtools merge -i GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_150.$
 
 ## Download sv_blacklist.bed http://cf.10xgenomics.com/supp/genome/GRCh38/sv_blacklist.bed
 
-cut -f 1-3 sv_blacklist.bed >ngs_pca_exclude.bed
-cat GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_150.$threshold.merge.bed >>ngs_pca_exclude.bed
+cut -f 1-3 sv_blacklist.bed >ngs_pca_exclude.sv_blacklist.map.$threshold.bed
+cat GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_150.$threshold.merge.bed >>ngs_pca_exclude.sv_blacklist.map.$threshold.bed
 
-sort -k1,1 -k2,2n ngs_pca_exclude.bed > ngs_pca_exclude.sorted.bed 
+sort -k1,1 -k2,2n ngs_pca_exclude.bed > ngs_pca_exclude.sv_blacklist.map.$threshold.sorted.bed
 
-bedtools merge -i ngs_pca_exclude.sorted.bed > ngs_pca_exclude.sorted.merge.bed 
+bedtools merge -i ngs_pca_exclude.sorted.bed >  ngs_pca_exclude.sv_blacklist.map.$threshold.sorted.merge.bed
 
-gzip ngs_pca_exclude.sorted.merge.bed 
+gzip ngs_pca_exclude.sv_blacklist.map.$threshold.sorted.merge.bed
+
+cp ngs_pca_exclude.sv_blacklist.map.$threshold.sorted.merge.bed.gz /Users/Kitty/git/NGS-PCA/resources
