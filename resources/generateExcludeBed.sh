@@ -27,13 +27,13 @@
 
 ## Extract regions of poor mappability
 
-
+kmer=50
 threshold=1.0
 
 # Pull out regions with mappability < threshold
-awk -v threshold="$threshold" '$5 < threshold {print}' GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_150.bed |cut -f 1-3 > GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_150.$threshold.bed
+awk -v threshold="$threshold" '$5 < threshold {print}' GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_$kmer.bed |cut -f 1-3 > GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_$kmer.$threshold.bed
 
-bedtools merge -i GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_150.$threshold.bed >GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_150.$threshold.merge.bed
+bedtools merge -i GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_$kmer.$threshold.bed >GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_$kmer.$threshold.merge.bed
 
 
 ## Download sv_blacklist.bed http://cf.10xgenomics.com/supp/genome/GRCh38/sv_blacklist.bed
