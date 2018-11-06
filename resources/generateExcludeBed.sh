@@ -27,8 +27,10 @@
 
 ## Extract regions of poor mappability
 
-kmer=50
 threshold=1.0
+
+for kmer in 50 100 125 150; do
+
 
 # Pull out regions with mappability < threshold
 awk -v threshold="$threshold" '$5 < threshold {print}' GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_$kmer.bed |cut -f 1-3 > GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_$kmer.$threshold.bed
@@ -42,13 +44,13 @@ cut -f 1-3 sv_blacklist.bed >ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$thresh
 
 cat GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_$kmer.$threshold.merge.bed >>ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.bed
 
-sort -k1,1 -k2,2n ngs_pca_exclude.bed > ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.sorted.bed
+sort -k1,1 -k2,2n ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.bed > ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.sorted.bed
 
-bedtools merge -i ngs_pca_exclude.sorted.bed >  ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.sorted.merge.bed
+bedtools merge -i ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.sorted.bed >  ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.sorted.merge.bed
 
-cp ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.sorted.merge.bed ~/git/NGS-PCA/resources
+# cp ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.sorted.merge.bed ~/git/NGS-PCA/resources
 
-gzip ~/git/NGS-PCA/resources/ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.sorted.merge.bed
+# gzip ~/git/NGS-PCA/resources/ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.sorted.merge.bed
 
 
 #Download DGV database wget "http://dgv.tcag.ca/dgv/docs/GRCh38_hg38_variants_2016-08-31.txt"
@@ -64,4 +66,5 @@ cp ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.sorted.merge.bed ~
 
 gzip ~/git/NGS-PCA/resources/ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.sorted.merge.bed
 
+done
 
