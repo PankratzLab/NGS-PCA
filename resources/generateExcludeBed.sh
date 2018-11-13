@@ -29,7 +29,7 @@
 
 threshold=1.0
 
-for kmer in 50 100 125 150; do
+for kmer in 25 35 50 100 125 150; do
 
 
 # Pull out regions with mappability < threshold
