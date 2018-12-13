@@ -29,7 +29,8 @@
 
 threshold=1.0
 
-for kmer in 25 35 50 100 125 150; do
+ # 25 100 125 150
+for kmer in 35 50; do
 
 
 # Pull out regions with mappability < threshold
@@ -65,6 +66,14 @@ bedtools merge -i ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.sor
 cp ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.sorted.merge.bed ~/git/NGS-PCA/resources
 
 gzip ~/git/NGS-PCA/resources/ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.sorted.merge.bed
+
+cat ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.sorted.merge.bed > ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.gsd.bed
+cut -f 1-3 /Users/Kitty/git/Analysis/mappability/genomicSuperDups.hg38.bed >> ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.gsd.bed
+
+sort -k1,1 -k2,2n ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.gsd.bed | bedtools merge > ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.gsd.sorted.merge.bed
+cp ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.gsd.sorted.merge.bed ~/git/NGS-PCA/resources
+gzip ~/git/NGS-PCA/resources/ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.gsd.sorted.merge.bed
+
 
 done
 
