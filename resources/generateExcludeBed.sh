@@ -67,8 +67,13 @@ cp ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.sorted.merge.bed ~
 
 gzip ~/git/NGS-PCA/resources/ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.sorted.merge.bed
 
+#Download genomic super dups
+# wget "http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=702540801_8IaaqO5dkQAKhgPYZAcpPOaA5Rhd&boolshad.hgta_printCustomTrackHeaders=0&hgta_ctName=tb_genomicSuperDups&hgta_ctDesc=table+browser+query+on+genomicSuperDups&hgta_ctVis=pack&hgta_ctUrl=&fbQual=whole&fbUpBases=200&fbDownBases=200&hgta_doGetBed=get+BED"
+# mv hgTables\?hgsid\=702540801_8IaaqO5dkQAKhgPYZAcpPOaA5Rhd\&boolshad.hgta_printCustomTrackHeaders\=0\&hgta_ctName\=tb_genomicSuperDups\&hgta_ctDesc\=table+browser+query+on+genomicSuperDups\&hgta_ctVis\=pack\&hgta_ctUrl\=\&fbQual\=whole\&fbUpBases\=200\&fbD genomicSuperDups.hg38.bed
+
+
 cat ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.sorted.merge.bed > ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.gsd.bed
-cut -f 1-3 /Users/Kitty/git/Analysis/mappability/genomicSuperDups.hg38.bed >> ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.gsd.bed
+cut -f 1-3 genomicSuperDups.hg38.bed >> ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.gsd.bed
 
 sort -k1,1 -k2,2n ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.gsd.bed | bedtools merge > ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.gsd.sorted.merge.bed
 cp ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.gsd.sorted.merge.bed ~/git/NGS-PCA/resources
