@@ -11,8 +11,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.ejml.data.DenseMatrix64F;
-import org.jblas.DoubleMatrix;
 import org.pankratzlab.ngspca.BedUtils.BEDOverlapDetector;
 import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 
@@ -116,7 +114,7 @@ public class NGSPCA {
     log.info("Writing to " + pcs);
     svd.dumpPCsToText(pcs, log);
     log.info("Writing to " + loadings);
-    svd.computeAndDumpLoadings(loadings, dm, log);
+    svd.computeAndDumpLoadings(loadings, log);
     log.info("Writing to " + singularValues);
     svd.dumpSingularValuesToText(singularValues, log);
   }

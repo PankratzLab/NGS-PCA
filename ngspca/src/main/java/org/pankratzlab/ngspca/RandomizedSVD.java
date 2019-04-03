@@ -2,17 +2,19 @@ package org.pankratzlab.ngspca;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.random.MersenneTwister;
-import org.ejml.data.DenseMatrix64F;
 
 // https://raw.githubusercontent.com/yunjhongwu/matrix-routines/master/randomized_svd.java
 // https://stackoverflow.com/questions/8677946/handle-large-sized-matrix-in-java/8678180 ... (Don't
@@ -107,7 +109,7 @@ public class RandomizedSVD {
    */
   void dumpPCsToText(String file, Logger log) {
     //
-    RealMatrix v = transpose ? rsvd[0] : rsvd[1];
+    RealMatrix v = transpose ? rsvd[0] : rsvd[2];
 
     String[] pcNames = SVD.getNumberedColumnHeader("PC", v.getRowDimension());
 
@@ -146,5 +148,38 @@ public class RandomizedSVD {
       log.log(Level.SEVERE, "unable to write to file " + file, e);
 
     }
+  }
+
+  /**
+   * @param file loadings will be computed and dumped to this file
+   * @param log
+   */
+  void computeAndDumpLoadings(String file, Logger log) {
+    RealMatrix loadingData = transpose ? rsvd[2] : rsvd[0];
+    String[] loadingNames = SVD.getNumberedColumnHeader("Loading",
+                                                        loadingData.getColumnDimension());
+    dumpMatrix(file, loadingData, "MARKER", loadingNames, originalRowNames, false, log);
+
+  }
+
+  /**
+   * @param file singular values will be dumped to this file
+   * @param log
+   */
+  void dumpSingularValuesToText(String file, Logger log) {
+    StringJoiner joiner = new StringJoiner("\n");
+    joiner.add("SINGULAR_VALUES\tPC");
+
+    for (int component = 0; component < numComponents; component++) {
+      joiner.add(component + "\t" + Double.toString(rsvd[1].getEntry(component, 0)));
+    }
+
+    try {
+      FileUtils.writeStringToFile(new File(file), joiner.toString(), Charset.defaultCharset(),
+                                  false);
+    } catch (IOException e) {
+      log.log(Level.SEVERE, "unable to write to file " + file, e);
+    }
+
   }
 }

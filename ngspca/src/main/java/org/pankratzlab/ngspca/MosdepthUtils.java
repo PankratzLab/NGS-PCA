@@ -12,8 +12,6 @@ import java.util.logging.Logger;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.ejml.data.DenseMatrix64F;
-import org.ejml.data.RealMatrix64F;
-import org.jblas.DoubleMatrix;
 import org.pankratzlab.ngspca.BedUtils.BEDOverlapDetector;
 import org.pankratzlab.ngspca.BedUtils.BedRegionResult;
 import htsjdk.tribble.bed.BEDFeature;
