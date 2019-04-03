@@ -97,7 +97,7 @@ public class NGSPCA {
       FileOps.writeSerial(dm, tmpDm, log);
     } else {
       log.info("Loading existing serialized file " + tmpDm);
-      dm = (DenseMatrix64F) FileOps.readSerial(tmpDm, log);
+      dm = (RealMatrix) FileOps.readSerial(tmpDm, log);
     }
 
     // perform SVD
