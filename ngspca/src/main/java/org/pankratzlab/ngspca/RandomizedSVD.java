@@ -6,15 +6,15 @@ import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.random.MersenneTwister;
-// https://raw.githubusercontent.com/yunjhongwu/matrix-routines/master/randomized_svd.java
-// https://stackoverflow.com/questions/8677946/handle-large-sized-matrix-in-java/8678180
-// org.jbl
-import org.jblas.Decompose;
-import org.jblas.DoubleMatrix;
-import org.jblas.Singular;
 
+// https://raw.githubusercontent.com/yunjhongwu/matrix-routines/master/randomized_svd.java
+// https://stackoverflow.com/questions/8677946/handle-large-sized-matrix-in-java/8678180 ... (Don't
+// do it :) )
+//
 public class RandomizedSVD {
 
+  //  https://arxiv.org/pdf/1608.02148.pdf
+  //  https://arxiv.org/pdf/0909.4061.pdf
   // Compute a (truncated) randomized SVD of a JBLAS DoubleMatrix
   private int numComponents = 2;
   private int niters = 5;
@@ -31,7 +31,7 @@ public class RandomizedSVD {
   public void fit(RealMatrix A) {
     transpose = A.getRowDimension() > A.getColumnDimension();
     rsvd[0] = MatrixUtils.createRealMatrix(A.getRowDimension(), numComponents);
-    rsvd[1] = MatrixUtils.createRealMatrix(1, numComponents);
+    rsvd[1] = MatrixUtils.createRealMatrix(numComponents, 1);
     rsvd[2] = MatrixUtils.createRealMatrix(A.getColumnDimension(), numComponents);
     if (transpose) {
       A = A.transpose();
@@ -45,31 +45,31 @@ public class RandomizedSVD {
       Q = new LUDecomposition(Q).getL();
     }
     Q = C.multiply(Q);
-
-    //    C.mmuli(Q, Q);
-
     Q = new QRDecomposition(Q).getQ();
-    //    DoubleMatrix[] svd = Singular.fullSVD(Q.transpose().mmul(A));
-    //    Returns:
-    //      A DoubleMatrix[3] array of U, S, V such that A = U * diag(S) * V'
     SingularValueDecomposition svd = new SingularValueDecomposition(Q.transpose().multiply(A));
     RealMatrix W = Q.multiply(svd.getU());
 
     if (transpose) {
       for (int i = 0; i < numComponents; i++) {
-        rsvd[0].putColumn(i, svd.getV().getColumn(i));
-        rsvd[1].put(i, svd[1].get(i));
-        rsvd[2].putColumn(i, W.getColumn(i));
+        rsvd[0].setColumn(i, svd.getV().getColumn(i));
+        rsvd[1].setEntry(i, 0, svd.getSingularValues()[i]);
+        rsvd[2].setColumn(i, W.getColumn(i));
       }
     } else {
       for (int i = 0; i < numComponents; i++) {
-        rsvd[0].putColumn(i, W.getColumn(i));
-        rsvd[1].put(i, svd[1].get(i));
-        rsvd[2].putColumn(i, svd[2].getColumn(i));
+        rsvd[0].setColumn(i, W.getColumn(i));
+        rsvd[1].setEntry(i, 0, svd.getSingularValues()[i]);
+        rsvd[2].setColumn(i, svd.getV().getColumn(i));
       }
     }
   }
 
+  /**
+   * @param rows
+   * @param columns
+   * @return a {@link RealMatrix} populated with random values (deterministic random using
+   *         {@link MersenneTwister})
+   */
   private static RealMatrix randn(int rows, int columns) {
     RealMatrix m = MatrixUtils.createRealMatrix(rows, columns);
     MersenneTwister twister = new MersenneTwister(42);
@@ -78,9 +78,7 @@ public class RandomizedSVD {
       for (int j = 0; j < columns; j++) {
         m.setEntry(i, j, twister.nextDouble());
       }
-      //      m.data[i] =twister.nextDouble();
     }
-
     return m;
   }
 }
