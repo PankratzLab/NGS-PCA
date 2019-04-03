@@ -31,7 +31,8 @@ public class RandomizedSVD {
 
   private int numOversamples = 10;
   private boolean transpose = false;
-  public RealMatrix[] rsvd = new RealMatrix[3];
+  private RealMatrix[] rsvd = new RealMatrix[3];
+  private final Logger log;
 
   /**
    * Column names of the original input data
@@ -43,33 +44,45 @@ public class RandomizedSVD {
   private final String[] originalRowNames;
 
   public RandomizedSVD(String[] originalColNames, String[] originalRowNames, int numComponents,
-                       int niters) {
+                       int niters, Logger log) {
     this.numComponents = numComponents;
     this.niters = niters;
     this.originalColNames = originalColNames;
     this.originalRowNames = originalRowNames;
+    this.log = log;
   }
 
   public void fit(RealMatrix A) {
+    log.info("Initializing matrices");
     transpose = A.getRowDimension() > A.getColumnDimension();
     rsvd[0] = MatrixUtils.createRealMatrix(A.getRowDimension(), numComponents);
     rsvd[1] = MatrixUtils.createRealMatrix(numComponents, 1);
     rsvd[2] = MatrixUtils.createRealMatrix(A.getColumnDimension(), numComponents);
     if (transpose) {
+      log.info("Transposing, since row N > column N");
       A = A.transpose();
     }
 
     RealMatrix C = A.multiply(A.transpose());
+    log.info("Selecting randomized Q");
+
     RealMatrix Q = randn(A.getRowDimension(),
                          Math.min(A.getRowDimension(), numComponents + numOversamples));
+
+    log.info("Beginning LU decomp iterations");
     for (int i = 0; i < niters; i++) {
       Q = C.multiply(Q);
       Q = new LUDecomposition(Q).getL();
     }
     Q = C.multiply(Q);
     Q = new QRDecomposition(Q).getQ();
+    log.info("SVD of reduced matrix");
+
     SingularValueDecomposition svd = new SingularValueDecomposition(Q.transpose().multiply(A));
+
     RealMatrix W = Q.multiply(svd.getU());
+
+    log.info("Setting SVD V/W/U results");
 
     if (transpose) {
       for (int i = 0; i < numComponents; i++) {
@@ -83,6 +96,7 @@ public class RandomizedSVD {
         rsvd[1].setEntry(i, 0, svd.getSingularValues()[i]);
         rsvd[2].setColumn(i, svd.getV().getColumn(i));
       }
+      log.info("Finished SVD");
     }
   }
 
