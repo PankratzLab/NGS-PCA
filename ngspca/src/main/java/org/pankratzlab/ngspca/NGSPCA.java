@@ -10,7 +10,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.ejml.data.DenseMatrix64F;
+import org.jblas.DoubleMatrix;
 import org.pankratzlab.ngspca.BedUtils.BEDOverlapDetector;
 import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 
@@ -88,7 +90,7 @@ public class NGSPCA {
     String tmpDm = outputDir + "tmp.mat.ser.gz";
 
     // populate input matrix and normalize
-    DenseMatrix64F dm;
+    RealMatrix dm;
     if (!FileOps.fileExists(tmpDm) || overwrite) {
       dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), threads,
                                       log);

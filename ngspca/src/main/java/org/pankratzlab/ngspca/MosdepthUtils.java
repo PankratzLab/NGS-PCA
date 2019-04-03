@@ -9,7 +9,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.ejml.data.DenseMatrix64F;
+import org.ejml.data.RealMatrix64F;
+import org.jblas.DoubleMatrix;
 import org.pankratzlab.ngspca.BedUtils.BEDOverlapDetector;
 import org.pankratzlab.ngspca.BedUtils.BedRegionResult;
 import htsjdk.tribble.bed.BEDFeature;
@@ -61,9 +65,9 @@ class MosdepthUtils {
    * @throws InterruptedException
    * @throws ExecutionException
    */
-  static DenseMatrix64F processFiles(List<String> mosDepthResultFiles, Set<String> ucscRegions,
-                                     int threads,
-                                     Logger log) throws InterruptedException, ExecutionException {
+  static RealMatrix processFiles(List<String> mosDepthResultFiles, Set<String> ucscRegions,
+                                 int threads,
+                                 Logger log) throws InterruptedException, ExecutionException {
     if (mosDepthResultFiles.isEmpty()) {
       String err = "No input files provided";
       log.severe(err);
@@ -82,16 +86,18 @@ class MosdepthUtils {
    * @throws ExecutionException
    */
 
-  private static DenseMatrix64F loadAndNormalizeData(List<String> mosDepthResultFiles,
-                                                     Set<String> ucscRegions, int threads,
-                                                     Logger log) throws InterruptedException,
-                                                                 ExecutionException {
+  private static RealMatrix loadAndNormalizeData(List<String> mosDepthResultFiles,
+                                                 Set<String> ucscRegions, int threads,
+                                                 Logger log) throws InterruptedException,
+                                                             ExecutionException {
 
     // TODO use map to verify region indices
     log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and "
              + ucscRegions.size() + " rows");
 
-    DenseMatrix64F dm = new DenseMatrix64F(ucscRegions.size(), mosDepthResultFiles.size());
+    //    RealMatrix dm = new (ucscRegions.size(), mosDepthResultFiles.size());
+    RealMatrix dm = MatrixUtils.createRealMatrix(ucscRegions.size(), mosDepthResultFiles.size());
+    //        new DenseMatrix64F(ucscRegions.size(), mosDepthResultFiles.size());
 
     log.info("Starting input processing of " + mosDepthResultFiles.size() + " files");
 
@@ -120,14 +126,16 @@ class MosdepthUtils {
 
   }
 
-  private static void setColumnData(DenseMatrix64F dm, int col, String inputFile,
+  private static void setColumnData(RealMatrix dm, int col, String inputFile,
                                     List<BEDFeature> features, Logger log) {
     log.info("Setting data for file " + Integer.toString(col + 1));
 
     for (int row = 0; row < features.size(); row++) {
       // mosdepth coverage parsed to "name" by htsjdk
       try {
-        dm.set(row, col, Double.parseDouble(features.get(row).getName()));
+        //        dm.add(v)
+        //        dm.data
+        dm.addToEntry(row, col, Double.parseDouble(features.get(row).getName()));
       } catch (NumberFormatException nfe) {
         log.log(Level.SEVERE, "an exception was thrown", nfe);
         throw new IllegalArgumentException("Invalid (non-numeric) coverage value in file "
