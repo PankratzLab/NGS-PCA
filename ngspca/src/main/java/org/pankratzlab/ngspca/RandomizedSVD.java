@@ -22,6 +22,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 //
 public class RandomizedSVD {
 
+  private static final int RANDOM_SEED = 42;
   //  https://arxiv.org/pdf/1608.02148.pdf
   //  https://arxiv.org/pdf/0909.4061.pdf
   // Compute a (truncated) randomized SVD of a JBLAS DoubleMatrix
@@ -93,7 +94,7 @@ public class RandomizedSVD {
    */
   private static RealMatrix randn(int rows, int columns) {
     RealMatrix m = MatrixUtils.createRealMatrix(rows, columns);
-    MersenneTwister twister = new MersenneTwister(42);
+    MersenneTwister twister = new MersenneTwister(RANDOM_SEED);
 
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < columns; j++) {
