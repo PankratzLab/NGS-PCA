@@ -1,11 +1,18 @@
 package org.pankratzlab.ngspca;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.StringJoiner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.random.MersenneTwister;
+import org.ejml.data.DenseMatrix64F;
 
 // https://raw.githubusercontent.com/yunjhongwu/matrix-routines/master/randomized_svd.java
 // https://stackoverflow.com/questions/8677946/handle-large-sized-matrix-in-java/8678180 ... (Don't
@@ -23,9 +30,21 @@ public class RandomizedSVD {
   private boolean transpose = false;
   public RealMatrix[] rsvd = new RealMatrix[3];
 
-  public RandomizedSVD(int numComponents, int niters) {
+  /**
+   * Column names of the original input data
+   */
+  private final String[] originalColNames;
+  /**
+   * Row names of the original input data
+   */
+  private final String[] originalRowNames;
+
+  public RandomizedSVD(String[] originalColNames, String[] originalRowNames, int numComponents,
+                       int niters) {
     this.numComponents = numComponents;
     this.niters = niters;
+    this.originalColNames = originalColNames;
+    this.originalRowNames = originalRowNames;
   }
 
   public void fit(RealMatrix A) {
@@ -80,5 +99,52 @@ public class RandomizedSVD {
       }
     }
     return m;
+  }
+
+  /**
+   * @param file dump the PCs to this text file
+   * @param log
+   */
+  void dumpPCsToText(String file, Logger log) {
+    //
+    RealMatrix v = transpose ? rsvd[0] : rsvd[1];
+
+    String[] pcNames = SVD.getNumberedColumnHeader("PC", v.getRowDimension());
+
+    dumpMatrix(file, v, "SAMPLE", pcNames, originalColNames, true, log);
+  }
+
+  private static void dumpMatrix(String file, RealMatrix m, String rowTitle,
+                                 String[] outputColumnNames, String[] outputRowNames,
+                                 boolean transposed, Logger log) {
+    try (PrintWriter writer = new PrintWriter(new File(file))) {
+
+      StringJoiner joiner = new StringJoiner("\t");
+      joiner.add(rowTitle);
+      for (String colName : outputColumnNames) {
+        joiner.add(colName);
+      }
+      writer.println(joiner.toString());
+      log.info(outputRowNames.length + " output rows by " + outputColumnNames.length
+               + " output columns");
+
+      for (int outputRow = 0; outputRow < outputRowNames.length; outputRow++) {
+        StringJoiner sample = new StringJoiner("\t");
+        sample.add(outputRowNames[outputRow]);
+        for (int outputColumn = 0; outputColumn < outputColumnNames.length; outputColumn++) {
+          if (transposed) {
+            sample.add(Double.toString(m.getEntry(outputColumn, outputRow)));
+          } else {
+            sample.add(Double.toString(m.getEntry(outputRow, outputColumn)));
+          }
+        }
+        writer.println(sample.toString());
+
+      }
+    } catch (FileNotFoundException e) {
+
+      log.log(Level.SEVERE, "unable to write to file " + file, e);
+
+    }
   }
 }

@@ -144,7 +144,7 @@ class SVD implements Serializable {
 
   }
 
-  private static String[] getNumberedColumnHeader(String type, int num) {
+  public static String[] getNumberedColumnHeader(String type, int num) {
     String[] names = new String[num];
     for (int i = 0; i < num; i++) {
       names[i] = type + (i + 1);

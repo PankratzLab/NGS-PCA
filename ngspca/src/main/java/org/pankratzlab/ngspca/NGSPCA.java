@@ -100,10 +100,13 @@ public class NGSPCA {
       dm = (RealMatrix) FileOps.readSerial(tmpDm, log);
     }
 
+    RandomizedSVD svd = new RandomizedSVD(samples.toArray(new String[samples.size()]),
+                                          regions.toArray(new String[regions.size()]), numPcs, 5);
+    svd.fit(dm);
     // perform SVD
-    SVD svd = new SVD(samples.toArray(new String[samples.size()]),
-                      regions.toArray(new String[regions.size()]));
-    svd.computeSVD(dm, numPcs, log);
+    //    SVD svd = new SVD(samples.toArray(new String[samples.size()]),
+    //                      regions.toArray(new String[regions.size()]));
+    //    svd.computeSVD(dm, numPcs, log);
 
     // output results
     String pcs = outputDir + "svd.pcs.txt";
