@@ -173,18 +173,15 @@ public class RandomizedSVD {
     }
   }
 
-  private static void printDims(RealMatrix m, Logger log) {
-    log.info("Row:" + m.getRowDimension() + " Col: " + m.getColumnDimension());
-  }
+  //  private static void printDims(RealMatrix m, Logger log) {
+  //    log.info("Row:" + m.getRowDimension() + " Col: " + m.getColumnDimension());
+  //  }
 
   /**
    * @param file loadings will be computed and dumped to this file
    * @param log
    */
   void computeAndDumpLoadings(String file, Logger log) {
-    for (RealMatrix m : rsvd) {
-      printDims(m, log);
-    }
     RealMatrix loadingData = transpose ? rsvd[2] : rsvd[0];
     String[] loadingNames = SVD.getNumberedColumnHeader("Loading",
                                                         loadingData.getColumnDimension());
