@@ -35,8 +35,8 @@ public class NGSPCA {
    * @throws IOException
    */
   private static void run(String input, String outputDir, String bedExclude,
-                          REGION_STRATEGY regionStrategy, int numPcs, int sampleAt,
-                          boolean overwrite, int threads,
+                          REGION_STRATEGY regionStrategy, int numPcs, int niters,
+                          int numOversamples, int sampleAt, boolean overwrite, int threads,
                           Logger log) throws InterruptedException, ExecutionException, IOException {
     new File(outputDir).mkdirs();
 
@@ -99,8 +99,8 @@ public class NGSPCA {
     }
 
     RandomizedSVD svd = new RandomizedSVD(samples.toArray(new String[samples.size()]),
-                                          regions.toArray(new String[regions.size()]), 5, log);
-    svd.fit(dm, numPcs);
+                                          regions.toArray(new String[regions.size()]), log);
+    svd.fit(dm, numPcs, niters, numOversamples);
     // perform SVD
     //    SVD svd = new SVD(samples.toArray(new String[samples.size()]),
     //                      regions.toArray(new String[regions.size()]));
@@ -108,7 +108,7 @@ public class NGSPCA {
 
     // output results
     //11:26:48 ->11:27:12
-    // 11:28:19 ->11:28:45
+    // 11:30:17 -> 11:30:44
     String pcs = outputDir + "svd.pcs.txt";
     String loadings = outputDir + "svd.loadings.txt";
     String singularValues = outputDir + "svd.singularvalues.txt";
@@ -142,10 +142,14 @@ public class NGSPCA {
       int sampleAt = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_SAMPLE_ARG,
                                                          Integer.toString(CmdLine.DEFAULT_SAMPLE)));
 
+      int niters = Integer.parseInt(cmd.getOptionValue(CmdLine.N_ITERS,
+                                                       Integer.toString(RandomizedSVD.DEFAULT_NITERS)));
+      int numOversamples = Integer.parseInt(cmd.getOptionValue(CmdLine.OVERSAMPLE,
+                                                               Integer.toString(RandomizedSVD.DEFAULT_OVERSAMPLES)));
       String bedExclude = cmd.getOptionValue(CmdLine.EXCLUDE_BED_FILE,
                                              CmdLine.DEFAULT_EXCLUDE_BED_FILE);
-      run(input, outputDir, bedExclude, REGION_STRATEGY.AUTOSOMAL, numPcs, sampleAt,
-          cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
+      run(input, outputDir, bedExclude, REGION_STRATEGY.AUTOSOMAL, numPcs, niters, numOversamples,
+          sampleAt, cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
     } catch (Exception e) {
       log.log(Level.SEVERE, "an exception was thrown", e);
       log.severe("An exception occured while running\nFeel free to open an issue at https://github.com/PankratzLab/NGS-PCA after reviewing the help message below");

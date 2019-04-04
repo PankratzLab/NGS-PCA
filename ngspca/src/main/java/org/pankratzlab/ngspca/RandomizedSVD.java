@@ -27,8 +27,8 @@ public class RandomizedSVD {
   //  https://arxiv.org/pdf/0909.4061.pdf
   // Compute a (truncated) randomized SVD of a JBLAS DoubleMatrix
   private int numComponents;
-  private static final int DEFAULT_NITERS = 2;
-  private static final int DEFAULT_OVERSAMPLES = 100;
+  static final int DEFAULT_NITERS = 10;
+  static final int DEFAULT_OVERSAMPLES = 200;
   private boolean transpose = false;
   private RealMatrix[] rsvd = new RealMatrix[3];
   private final Logger log;

@@ -23,6 +23,8 @@ class CmdLine {
   static final String NUM_THREADS_ARG = "threads";
   static final String NUM_SAMPLE_ARG = "sampleEvery";
   static final String EXCLUDE_BED_FILE = "bedExclude";
+  static final String N_ITERS = "iters";
+  static final String OVERSAMPLE = "oversample";
 
   static final int DEFAULT_PCS = 20;
   static final int DEFAULT_SAMPLE = 1;
@@ -82,6 +84,15 @@ class CmdLine {
                                      .desc("Optional: Provide a file to exclude specific regions from PCA input, prior to sampling with "
                                            + NUM_SAMPLE_ARG)
                                      .required(false).build();
+    final Option niter = Option.builder(N_ITERS).hasArg(true).required().longOpt(N_ITERS).hasArg()
+                               .desc("specifies the number of power (subspace) iterations to reduce the approximation error. The power scheme is recommended, if the singular values decay slowly. In practice, 2 or 3 iterations achieve good results, however, computing power iterations   increases the computational costs "
+                                     + RandomizedSVD.DEFAULT_NITERS)
+                               .required(false).build();
+    final Option oversamples = Option.builder(OVERSAMPLE).hasArg(true).required()
+                                     .longOpt(OVERSAMPLE).hasArg()
+                                     .desc("An oversampling parameter to improve the approximation of the randomized PCA. A value of at least 10 is recommended"
+                                           + RandomizedSVD.DEFAULT_OVERSAMPLES)
+                                     .required(false).build();
 
     final Options options = new Options();
     options.addOption(help);
@@ -92,6 +103,8 @@ class CmdLine {
     options.addOption(numThreads);
     options.addOption(sampleEvery);
     options.addOption(bedExcludes);
+    options.addOption(niter);
+    options.addOption(oversamples);
 
     options.addOption(overwrite);
 
