@@ -26,10 +26,10 @@ public class RandomizedSVD {
   //  https://arxiv.org/pdf/1608.02148.pdf
   //  https://arxiv.org/pdf/0909.4061.pdf
   // Compute a (truncated) randomized SVD of a JBLAS DoubleMatrix
-  private int numComponents = 2;
-  private int niters = 5;
+  private int numComponents;
+  private int niters;
 
-  private int numOversamples = 10;
+  private int numOversamples = 100;
   private boolean transpose = false;
   private RealMatrix[] rsvd = new RealMatrix[3];
   private final Logger log;
