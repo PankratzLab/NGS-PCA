@@ -99,9 +99,8 @@ public class NGSPCA {
     }
 
     RandomizedSVD svd = new RandomizedSVD(samples.toArray(new String[samples.size()]),
-                                          regions.toArray(new String[regions.size()]), numPcs, 5,
-                                          log);
-    svd.fit(dm);
+                                          regions.toArray(new String[regions.size()]), 5, log);
+    svd.fit(dm, numPcs);
     // perform SVD
     //    SVD svd = new SVD(samples.toArray(new String[samples.size()]),
     //                      regions.toArray(new String[regions.size()]));

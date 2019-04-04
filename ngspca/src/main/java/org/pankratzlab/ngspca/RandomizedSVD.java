@@ -43,16 +43,21 @@ public class RandomizedSVD {
    */
   private final String[] originalRowNames;
 
-  public RandomizedSVD(String[] originalColNames, String[] originalRowNames, int numComponents,
-                       int niters, Logger log) {
-    this.numComponents = numComponents;
+  public RandomizedSVD(String[] originalColNames, String[] originalRowNames, int niters,
+                       Logger log) {
     this.niters = niters;
     this.originalColNames = originalColNames;
     this.originalRowNames = originalRowNames;
     this.log = log;
   }
 
-  public void fit(RealMatrix A) {
+  public void fit(RealMatrix A, int numberOfComponentsToStore) {
+    this.numComponents = Math.min(numberOfComponentsToStore,
+                                  Math.min(A.getColumnDimension(), A.getRowDimension()));
+    if (numComponents < numberOfComponentsToStore) {
+      log.info(numberOfComponentsToStore + " PCs requested, but only be able to compute "
+               + numComponents);
+    }
     log.info("Initializing matrices");
     transpose = A.getRowDimension() > A.getColumnDimension();
     rsvd[0] = MatrixUtils.createRealMatrix(A.getRowDimension(), numComponents);
@@ -84,8 +89,15 @@ public class RandomizedSVD {
 
     log.info("Setting SVD V/W/U results");
 
+    //    A DoubleMatrix[3] array of U, S, V such that A = U * diag(S) * V'
     if (transpose) {
+      //      log.info(numComponents + "");
+      //      log.info(A.getRowDimension() + "\t" + A.getColumnDimension() + "\t"
+      //               + svd.getV().getColumnDimension());
+      //      log.info(rsvd[0].getRowDimension() + "\t" + rsvd[0].getColumnDimension());
       for (int i = 0; i < numComponents; i++) {
+        //        log.info(i + "");
+        //        log.info(svd.getV().getColumn(i).length + "");
         rsvd[0].setColumn(i, svd.getV().getColumn(i));
         rsvd[1].setEntry(i, 0, svd.getSingularValues()[i]);
         rsvd[2].setColumn(i, W.getColumn(i));
@@ -165,11 +177,18 @@ public class RandomizedSVD {
     }
   }
 
+  private static void printDims(RealMatrix m, Logger log) {
+    log.info("Row:" + m.getRowDimension() + " Col: " + m.getColumnDimension());
+  }
+
   /**
    * @param file loadings will be computed and dumped to this file
    * @param log
    */
   void computeAndDumpLoadings(String file, Logger log) {
+    for (RealMatrix m : rsvd) {
+      printDims(m, log);
+    }
     RealMatrix loadingData = transpose ? rsvd[2] : rsvd[0];
     String[] loadingNames = SVD.getNumberedColumnHeader("Loading",
                                                         loadingData.getColumnDimension());
