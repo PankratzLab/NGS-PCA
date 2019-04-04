@@ -67,7 +67,7 @@ public class RandomizedSVD {
       log.info("Transposing, since row N > column N");
       A = A.transpose();
     }
-
+    log.info(A.getRowDimension() + "\t" + A.getColumnDimension());
     RealMatrix C = A.multiply(A.transpose());
     log.info("Selecting randomized Q");
 
@@ -76,6 +76,7 @@ public class RandomizedSVD {
 
     log.info("Beginning LU decomp iterations");
     for (int i = 0; i < niters; i++) {
+      //      want C*Q
       Q = C.multiply(Q);
       Q = new LUDecomposition(Q).getL();
     }
@@ -91,13 +92,8 @@ public class RandomizedSVD {
 
     //    A DoubleMatrix[3] array of U, S, V such that A = U * diag(S) * V'
     if (transpose) {
-      //      log.info(numComponents + "");
-      //      log.info(A.getRowDimension() + "\t" + A.getColumnDimension() + "\t"
-      //               + svd.getV().getColumnDimension());
-      //      log.info(rsvd[0].getRowDimension() + "\t" + rsvd[0].getColumnDimension());
       for (int i = 0; i < numComponents; i++) {
-        //        log.info(i + "");
-        //        log.info(svd.getV().getColumn(i).length + "");
+
         rsvd[0].setColumn(i, svd.getV().getColumn(i));
         rsvd[1].setEntry(i, 0, svd.getSingularValues()[i]);
         rsvd[2].setColumn(i, W.getColumn(i));
@@ -136,7 +132,7 @@ public class RandomizedSVD {
    */
   void dumpPCsToText(String file, Logger log) {
     //
-    RealMatrix v = transpose ? rsvd[0] : rsvd[2];
+    RealMatrix v = transpose ? rsvd[2] : rsvd[0];
 
     String[] pcNames = SVD.getNumberedColumnHeader("PC", v.getRowDimension());
 
