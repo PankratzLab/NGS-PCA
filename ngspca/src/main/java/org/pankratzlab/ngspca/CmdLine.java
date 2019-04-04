@@ -85,7 +85,7 @@ class CmdLine {
                                            + NUM_SAMPLE_ARG)
                                      .required(false).build();
     final Option niter = Option.builder(N_ITERS).hasArg(true).required().longOpt(N_ITERS).hasArg()
-                               .desc("specifies the number of power (subspace) iterations to reduce the approximation error. The power scheme is recommended, if the singular values decay slowly. In practice, 2 or 3 iterations achieve good results, however, computing power iterations   increases the computational costs "
+                               .desc("specifies the number of power (subspace) iterations to reduce the approximation error. The power scheme is recommended, if the singular values decay slowly. In practice, 2 or 3 iterations achieve good results, however, computing power iterations increases the computational costs "
                                      + RandomizedSVD.DEFAULT_NITERS)
                                .required(false).build();
     final Option oversamples = Option.builder(OVERSAMPLE).hasArg(true).required()

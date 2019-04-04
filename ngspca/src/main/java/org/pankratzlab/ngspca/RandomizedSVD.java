@@ -84,6 +84,8 @@ public class RandomizedSVD {
     log.info("Beginning LU decomp iterations");
     for (int i = 0; i < niters; i++) {
       //      want C*Q
+      log.info("Subspace iteration: " + Integer.toString(i));
+
       Q = C.multiply(Q);
       Q = new LUDecomposition(Q).getL();
     }
@@ -140,7 +142,7 @@ public class RandomizedSVD {
   void dumpPCsToText(String file, Logger log) {
     //
     RealMatrix v = transpose ? rsvd[2] : rsvd[0];
-
+    v = v.transpose();
     String[] pcNames = SVD.getNumberedColumnHeader("PC", v.getRowDimension());
 
     dumpMatrix(file, v, "SAMPLE", pcNames, originalColNames, true, log);
@@ -202,10 +204,10 @@ public class RandomizedSVD {
    */
   void dumpSingularValuesToText(String file, Logger log) {
     StringJoiner joiner = new StringJoiner("\n");
-    joiner.add("SINGULAR_VALUES\tPC");
+    joiner.add("PC\tSINGULAR_VALUES");
 
     for (int component = 0; component < numComponents; component++) {
-      joiner.add(component + "\t" + Double.toString(rsvd[1].getEntry(component, 0)));
+      joiner.add(component + 1 + "\t" + Double.toString(rsvd[1].getEntry(component, 0)));
     }
 
     try {
