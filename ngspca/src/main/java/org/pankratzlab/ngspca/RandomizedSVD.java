@@ -27,9 +27,8 @@ public class RandomizedSVD {
   //  https://arxiv.org/pdf/0909.4061.pdf
   // Compute a (truncated) randomized SVD of a JBLAS DoubleMatrix
   private int numComponents;
-  private int niters;
-
-  private int numOversamples = 100;
+  private static final int DEFAULT_NITERS = 2;
+  private static final int DEFAULT_OVERSAMPLES = 100;
   private boolean transpose = false;
   private RealMatrix[] rsvd = new RealMatrix[3];
   private final Logger log;
@@ -43,15 +42,23 @@ public class RandomizedSVD {
    */
   private final String[] originalRowNames;
 
-  public RandomizedSVD(String[] originalColNames, String[] originalRowNames, int niters,
-                       Logger log) {
-    this.niters = niters;
+  public RandomizedSVD(String[] originalColNames, String[] originalRowNames, Logger log) {
     this.originalColNames = originalColNames;
     this.originalRowNames = originalRowNames;
     this.log = log;
   }
 
-  public void fit(RealMatrix A, int numberOfComponentsToStore) {
+  /**
+   * @param A matrix to perform randomized PCA on
+   * @param numberOfComponentsToStore number of PCs to compute
+   * @param niters specifies the number of power (subspace) iterations to reduce the approximation
+   *          error. The power scheme is recommended, if the singular values decay slowly. In
+   *          practice, 2 or 3 iterations achieve good results, however, computing power iterations
+   *          increases the computational costs
+   * @param numOversamples is an oversampling parameter to improve the approximation. A value of at
+   *          least 10 is recommended,
+   */
+  public void fit(RealMatrix A, int numberOfComponentsToStore, int niters, int numOversamples) {
     this.numComponents = Math.min(numberOfComponentsToStore,
                                   Math.min(A.getColumnDimension(), A.getRowDimension()));
     if (numComponents < numberOfComponentsToStore) {
@@ -182,7 +189,7 @@ public class RandomizedSVD {
    * @param log
    */
   void computeAndDumpLoadings(String file, Logger log) {
-    RealMatrix loadingData = transpose ? rsvd[2] : rsvd[0];
+    RealMatrix loadingData = transpose ? rsvd[0] : rsvd[2];
     String[] loadingNames = SVD.getNumberedColumnHeader("Loading",
                                                         loadingData.getColumnDimension());
     dumpMatrix(file, loadingData, "MARKER", loadingNames, originalRowNames, false, log);
