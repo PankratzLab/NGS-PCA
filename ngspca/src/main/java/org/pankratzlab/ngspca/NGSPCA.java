@@ -149,7 +149,6 @@ public class NGSPCA {
       log.log(Level.SEVERE, "an exception was thrown", e);
       log.severe("An exception occured while running\nFeel free to open an issue at https://github.com/PankratzLab/NGS-PCA after reviewing the help message below");
       CmdLine.printHelp(log, CmdLine.generateOptions());
-
     }
   }
 }
