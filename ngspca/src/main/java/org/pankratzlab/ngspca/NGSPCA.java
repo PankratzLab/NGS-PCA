@@ -102,13 +102,7 @@ public class NGSPCA {
                                           regions.toArray(new String[regions.size()]), log);
     svd.fit(dm, numPcs, niters, numOversamples);
     // perform SVD
-    //    SVD svd = new SVD(samples.toArray(new String[samples.size()]),
-    //                      regions.toArray(new String[regions.size()]));
-    //    svd.computeSVD(dm, numPcs, log);
 
-    // output results
-    //11:26:48 ->11:27:12
-    // 11:30:17 -> 11:30:44
     String pcs = outputDir + "svd.pcs.txt";
     String loadings = outputDir + "svd.loadings.txt";
     String singularValues = outputDir + "svd.singularvalues.txt";
