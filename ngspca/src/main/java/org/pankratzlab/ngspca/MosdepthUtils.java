@@ -126,7 +126,10 @@ class MosdepthUtils {
 
   private static void setColumnData(RealMatrix dm, int col, String inputFile,
                                     List<BEDFeature> features, Logger log) {
-    log.info("Setting data for file " + Integer.toString(col + 1));
+    int n = col + 1;
+    if (n + 1 == 0 || n + 1 % 100 == 0) {
+      log.info("Setting data for file " + Integer.toString(n));
+    }
 
     for (int row = 0; row < features.size(); row++) {
       // mosdepth coverage parsed to "name" by htsjdk
