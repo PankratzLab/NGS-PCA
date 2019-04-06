@@ -74,12 +74,13 @@ public class RandomizedSVD {
       log.info("Transposing, since row N > column N");
       A = A.transpose();
     }
-    log.info(A.getRowDimension() + "\t" + A.getColumnDimension());
+    log.info("A dim:" + A.getRowDimension() + "\t" + A.getColumnDimension());
     RealMatrix C = A.multiply(A.transpose());
     log.info("Selecting randomized Q");
 
     RealMatrix Q = randn(A.getRowDimension(),
                          Math.min(A.getRowDimension(), numComponents + numOversamples));
+    log.info("Q dim:" + Q.getRowDimension() + "\t" + Q.getColumnDimension());
 
     log.info("Beginning LU decomp iterations");
     for (int i = 0; i < niters; i++) {
