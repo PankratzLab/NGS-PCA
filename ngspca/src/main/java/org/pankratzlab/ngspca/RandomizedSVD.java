@@ -9,6 +9,7 @@ import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.QRDecomposition;
@@ -58,13 +59,15 @@ public class RandomizedSVD {
    * @param numOversamples is an oversampling parameter to improve the approximation. A value of at
    *          least 10 is recommended,
    */
-  public void fit(RealMatrix A, int numberOfComponentsToStore, int niters, int numOversamples) {
+  public void fit(BlockRealMatrix A, int numberOfComponentsToStore, int niters,
+                  int numOversamples) {
     this.numComponents = Math.min(numberOfComponentsToStore,
                                   Math.min(A.getColumnDimension(), A.getRowDimension()));
     if (numComponents < numberOfComponentsToStore) {
       log.info(numberOfComponentsToStore + " PCs requested, but only be able to compute "
                + numComponents);
     }
+
     log.info("Initializing matrices");
     transpose = A.getRowDimension() > A.getColumnDimension();
     rsvd[0] = MatrixUtils.createRealMatrix(A.getRowDimension(), numComponents);
@@ -74,7 +77,7 @@ public class RandomizedSVD {
       log.info("Transposing, since row N > column N");
       A = A.transpose();
     }
-    log.info("A dim:" + A.getRowDimension() + "\t" + A.getColumnDimension());
+    log.info("A dim:" + A.getRowDimension() + "\t" + A.getColumnDimension() + " BLOCK multiply");
     RealMatrix C = A.multiply(A.transpose());
     log.info("Selecting randomized Q");
 

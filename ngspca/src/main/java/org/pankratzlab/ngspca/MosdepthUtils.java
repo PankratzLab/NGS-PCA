@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.ejml.data.DenseMatrix64F;
@@ -63,9 +64,9 @@ class MosdepthUtils {
    * @throws InterruptedException
    * @throws ExecutionException
    */
-  static RealMatrix processFiles(List<String> mosDepthResultFiles, Set<String> ucscRegions,
-                                 int threads,
-                                 Logger log) throws InterruptedException, ExecutionException {
+  static BlockRealMatrix processFiles(List<String> mosDepthResultFiles, Set<String> ucscRegions,
+                                      int threads,
+                                      Logger log) throws InterruptedException, ExecutionException {
     if (mosDepthResultFiles.isEmpty()) {
       String err = "No input files provided";
       log.severe(err);
@@ -141,12 +142,13 @@ class MosdepthUtils {
    * @throws ExecutionException
    */
 
-  private static RealMatrix loadAndNormalizeData(List<String> mosDepthResultFiles,
-                                                 Set<String> ucscRegions, int threads, Logger log) {
+  private static BlockRealMatrix loadAndNormalizeData(List<String> mosDepthResultFiles,
+                                                      Set<String> ucscRegions, int threads,
+                                                      Logger log) {
 
     log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and "
              + ucscRegions.size() + " rows");
-    RealMatrix dm = MatrixUtils.createRealMatrix(ucscRegions.size(), mosDepthResultFiles.size());
+    BlockRealMatrix dm = new BlockRealMatrix(ucscRegions.size(), mosDepthResultFiles.size());
 
     log.info("Starting input processing of " + mosDepthResultFiles.size() + " files");
     int col = 0;

@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.pankratzlab.ngspca.BedUtils.BEDOverlapDetector;
 import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 
@@ -88,14 +88,14 @@ public class NGSPCA {
     String tmpDm = outputDir + "tmp.mat.ser.gz";
 
     // populate input matrix and normalize
-    RealMatrix dm;
+    BlockRealMatrix dm;
     if (!FileOps.fileExists(tmpDm) || overwrite) {
       dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), threads,
                                       log);
       FileOps.writeSerial(dm, tmpDm, log);
     } else {
       log.info("Loading existing serialized file " + tmpDm);
-      dm = (RealMatrix) FileOps.readSerial(tmpDm, log);
+      dm = (BlockRealMatrix) FileOps.readSerial(tmpDm, log);
     }
 
     RandomizedSVD svd = new RandomizedSVD(samples.toArray(new String[samples.size()]),
