@@ -84,10 +84,10 @@ class MosdepthUtils {
    * @throws ExecutionException
    */
 
-  private static RealMatrix loadAndNormalizeData(List<String> mosDepthResultFiles,
-                                                 Set<String> ucscRegions, int threads,
-                                                 Logger log) throws InterruptedException,
-                                                             ExecutionException {
+  private static RealMatrix loadAndNormalizeDataOld(List<String> mosDepthResultFiles,
+                                                    Set<String> ucscRegions, int threads,
+                                                    Logger log) throws InterruptedException,
+                                                                ExecutionException {
 
     // TODO use map to verify region indices
     log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and "
@@ -109,6 +109,7 @@ class MosdepthUtils {
     int col = 0;
     for (Future<BedRegionResult> future : futures) {
       BedRegionResult current = future.get();
+      //      future.
       String file = mosDepthResultFiles.get(col);
       if (!file.equals(current.file)) {
         throw new IllegalArgumentException("Invalid file returned, expecting " + file + " and got "
@@ -116,6 +117,12 @@ class MosdepthUtils {
       }
       setColumnData(dm, col, mosDepthResultFiles.get(col), current.features, log);
       col++;
+
+      if (col == 1 || col % 100 == 0) {
+        log.info("Set data for file " + Integer.toString(col));
+        log.info("Memory used: "
+                 + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+      }
     }
     log.info("Normalizing input matrix");
     NormalizationOperations.foldChangeAndCenterRows(dm);
@@ -124,12 +131,44 @@ class MosdepthUtils {
 
   }
 
+  /**
+   * @param mosDepthResultFiles mosdepth output bed files to be processed
+   * @param ucscRegions only these regions will be used
+   * @param threads number of threads to use when loading
+   * @param log
+   * @return normalized {@link DenseMatrix64F} holding all input files
+   * @throws InterruptedException
+   * @throws ExecutionException
+   */
+
+  private static RealMatrix loadAndNormalizeData(List<String> mosDepthResultFiles,
+                                                 Set<String> ucscRegions, int threads, Logger log) {
+
+    log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and "
+             + ucscRegions.size() + " rows");
+    RealMatrix dm = MatrixUtils.createRealMatrix(ucscRegions.size(), mosDepthResultFiles.size());
+
+    log.info("Starting input processing of " + mosDepthResultFiles.size() + " files");
+    int col = 0;
+    for (String mosDepthResultFile : mosDepthResultFiles) {
+
+      setColumnData(dm, col, mosDepthResultFile,
+                    BedUtils.loadSpecificRegions(mosDepthResultFile, ucscRegions).features, log);
+      col++;
+      if (col == 1 || col % 200 == 0) {
+        log.info("Set data for file " + Integer.toString(col));
+        log.info("Memory used: "
+                 + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+      }
+    }
+    log.info("Normalizing input matrix");
+    NormalizationOperations.foldChangeAndCenterRows(dm);
+    return dm;
+
+  }
+
   private static void setColumnData(RealMatrix dm, int col, String inputFile,
                                     List<BEDFeature> features, Logger log) {
-    int n = col + 1;
-    if (n + 1 == 0 || n + 1 % 100 == 0) {
-      log.info("Setting data for file " + Integer.toString(n));
-    }
 
     for (int row = 0; row < features.size(); row++) {
       // mosdepth coverage parsed to "name" by htsjdk
