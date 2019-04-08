@@ -67,37 +67,60 @@ public class RandomizedSVD {
       log.info(numberOfComponentsToStore + " PCs requested, but only be able to compute "
                + numComponents);
     }
+    //    A = A.transpose();
 
     log.info("Initializing matrices");
-    transpose = A.getRowDimension() > A.getColumnDimension();
+    int m = A.getRowDimension();
+    int n = A.getColumnDimension();
+    transpose = m < n;
     rsvd[0] = MatrixUtils.createRealMatrix(A.getRowDimension(), numComponents);
     rsvd[1] = MatrixUtils.createRealMatrix(numComponents, 1);
     rsvd[2] = MatrixUtils.createRealMatrix(A.getColumnDimension(), numComponents);
     if (transpose) {
-      log.info("Transposing, since row N > column N");
+      log.info("Transposing, since row N <column N");
       A = A.transpose();
+      m = A.getRowDimension();
+      n = A.getColumnDimension();
     }
-    log.info("A dim:" + A.getRowDimension() + "\t" + A.getColumnDimension() + " BLOCK multiply");
-    RealMatrix C = A.multiply(A.transpose());
+    log.info("A dim:" + m + "\t" + A.getColumnDimension() + " BLOCK multiply");
     log.info("Selecting randomized Q");
 
-    RealMatrix Q = randn(A.getRowDimension(),
-                         Math.min(A.getRowDimension(), numComponents + numOversamples));
-    log.info("Q dim:" + Q.getRowDimension() + "\t" + Q.getColumnDimension());
-
+    RealMatrix O = randn(n, Math.min(n, numComponents + numOversamples));
+    log.info("Q dim:" + O.getRowDimension() + "\t" + O.getColumnDimension());
+    //    RealMatrix C = A.multiply(O);
+    RealMatrix Y = A.multiply(O);
+    O = null;
     log.info("Beginning LU decomp iterations");
     for (int i = 0; i < niters; i++) {
       //      want C*Q
       log.info("Subspace iteration: " + Integer.toString(i));
+      //      ??cro ssprod
+      //      Y <- qr.Q( qr(Y, complete = FALSE) , complete = FALSE )
+      log.info("Y dim:" + Y.getRowDimension() + "\t" + Y.getColumnDimension() + " BLOCK multiply");
 
-      Q = C.multiply(Q);
-      Q = new LUDecomposition(Q).getL();
+      Y = new QRDecomposition(Y).getQ();
+      log.info("QR comp");
+
+      //      Z <- crossprod_help(A , Y )
+      RealMatrix Z = A.transpose().multiply(Y);
+      log.info("Z");
+
+      Z = new QRDecomposition(Z).getQ();
+      Y = A.multiply(Z);
+      //      O = C.multiply(O);
+      //      O = new LUDecomposition(O).getL();
     }
-    Q = C.multiply(Q);
-    Q = new QRDecomposition(Q).getQ();
+    Y = null;
+    A = null;
+    RealMatrix Q = new QRDecomposition(Y).getQ();
+
+    RealMatrix B = Q.transpose().multiply(A);
+    //
+    //    O = C.multiply(O);
+    //    O = new QRDecomposition(O).getQ();
     log.info("SVD of reduced matrix");
 
-    SingularValueDecomposition svd = new SingularValueDecomposition(Q.transpose().multiply(A));
+    SingularValueDecomposition svd = new SingularValueDecomposition(B);
 
     RealMatrix W = Q.multiply(svd.getU());
 
