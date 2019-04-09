@@ -88,25 +88,26 @@ public class RandomizedSVD {
     log.info("Beginning LU decomp iterations");
     for (int i = 0; i < niters; i++) {
       log.info("Subspace iteration: " + Integer.toString(i));
+      log.info("Y QR decomp");
       QRDecomposition qr = new QRDecomposition(new Matrix(Y.getData()));
       Y = MatrixUtils.createRealMatrix(qr.getQ().getArray());
       log.info("Computing A Y cross prod");
-
       RealMatrix Z = A.transpose().multiply(Y);
-
+      log.info("Z QR decomp");
       Z = MatrixUtils.createRealMatrix(new QRDecomposition(new Matrix(Z.getData())).getQ()
                                                                                    .getArray());
+      log.info("A %*% Z");
       Y = A.multiply(Z);
     }
 
     RealMatrix Q = MatrixUtils.createRealMatrix(new QRDecomposition(new Matrix(Y.getData())).getQ()
                                                                                             .getArray());
-
+    log.info("Q %*% Y");
     RealMatrix B = Q.transpose().multiply(A);
     log.info("SVD of reduced matrix");
-
     SingularValueDecomposition svd = new SingularValueDecomposition(B);
 
+    log.info("Finding W");
     RealMatrix W = Q.multiply(svd.getU());
 
     log.info("Setting SVD V/W/U results");
