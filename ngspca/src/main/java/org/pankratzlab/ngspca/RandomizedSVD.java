@@ -67,8 +67,6 @@ public class RandomizedSVD {
       log.info(numberOfComponentsToStore + " PCs requested, but only be able to compute "
                + numComponents);
     }
-    //    A = A.transpose();
-
     log.info("Initializing matrices");
     int m = A.getRowDimension();
     int n = A.getColumnDimension();
@@ -79,60 +77,32 @@ public class RandomizedSVD {
     if (transpose) {
       log.info("Transposing, since row N <column N");
       A = A.transpose();
-      m = A.getRowDimension();
+      //      m = A.getRowDimension();
       n = A.getColumnDimension();
     }
-    log.info("A dim:" + m + "\t" + A.getColumnDimension() + " BLOCK multiply");
     log.info("Selecting randomized Q");
 
     RealMatrix O = randn(n, Math.min(n, numComponents + numOversamples));
     log.info("O dim:" + O.getRowDimension() + "\t" + O.getColumnDimension());
-    //    RealMatrix C = A.multiply(O);
     RealMatrix Y = A.multiply(O);
-    O = null;
     log.info("Beginning LU decomp iterations");
     for (int i = 0; i < niters; i++) {
-      //      want C*Q
       log.info("Subspace iteration: " + Integer.toString(i));
-      //      ??cro ssprod
-      //      Y <- qr.Q( qr(Y, complete = FALSE) , complete = FALSE )
-      log.info("Y dim:" + Y.getRowDimension() + "\t" + Y.getColumnDimension() + " BLOCK multiply");
-      log.info("Memory used: "
-               + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
-      //      QR
       QRDecomposition qr = new QRDecomposition(new Matrix(Y.getData()));
-      //      qr.
-      //      qr.
-      log.info("Memory used QR: "
-               + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
-      //      QR
       Y = MatrixUtils.createRealMatrix(qr.getQ().getArray());
-      log.info("Memory used get Q: "
-               + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
-      log.info("Y dim:" + Y.getRowDimension() + "\t" + Y.getColumnDimension() + " BLOCK multiply");
+      log.info("Computing A Y cross prod");
 
-      log.info("QR comp");
-
-      //      Z <- crossprod_help(A , Y )
       RealMatrix Z = A.transpose().multiply(Y);
-      log.info("Z");
 
       Z = MatrixUtils.createRealMatrix(new QRDecomposition(new Matrix(Z.getData())).getQ()
                                                                                    .getArray());
       Y = A.multiply(Z);
-      //      O = C.multiply(O);
-      //      O = new LUDecomposition(O).getL();
     }
-    //    Y = null;
-    //    A = null;
-    //    RealMatrix Q = new QRDecomposition(Y).getQ();
+
     RealMatrix Q = MatrixUtils.createRealMatrix(new QRDecomposition(new Matrix(Y.getData())).getQ()
                                                                                             .getArray());
 
     RealMatrix B = Q.transpose().multiply(A);
-    //
-    //    O = C.multiply(O);
-    //    O = new QRDecomposition(O).getQ();
     log.info("SVD of reduced matrix");
 
     SingularValueDecomposition svd = new SingularValueDecomposition(B);
@@ -140,8 +110,6 @@ public class RandomizedSVD {
     RealMatrix W = Q.multiply(svd.getU());
 
     log.info("Setting SVD V/W/U results");
-
-    //    A DoubleMatrix[3] array of U, S, V such that A = U * diag(S) * V'
     if (transpose) {
       for (int i = 0; i < numComponents; i++) {
 
