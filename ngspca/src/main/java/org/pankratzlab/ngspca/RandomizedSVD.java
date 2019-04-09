@@ -10,12 +10,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.linear.BlockRealMatrix;
-import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.random.MersenneTwister;
+import Jama.Matrix;
+import Jama.QRDecomposition;
 
 // https://raw.githubusercontent.com/yunjhongwu/matrix-routines/master/randomized_svd.java
 // https://stackoverflow.com/questions/8677946/handle-large-sized-matrix-in-java/8678180 ... (Don't
@@ -86,7 +86,7 @@ public class RandomizedSVD {
     log.info("Selecting randomized Q");
 
     RealMatrix O = randn(n, Math.min(n, numComponents + numOversamples));
-    log.info("Q dim:" + O.getRowDimension() + "\t" + O.getColumnDimension());
+    log.info("O dim:" + O.getRowDimension() + "\t" + O.getColumnDimension());
     //    RealMatrix C = A.multiply(O);
     RealMatrix Y = A.multiply(O);
     O = null;
@@ -97,22 +97,37 @@ public class RandomizedSVD {
       //      ??cro ssprod
       //      Y <- qr.Q( qr(Y, complete = FALSE) , complete = FALSE )
       log.info("Y dim:" + Y.getRowDimension() + "\t" + Y.getColumnDimension() + " BLOCK multiply");
+      log.info("Memory used: "
+               + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+      //      QR
+      QRDecomposition qr = new QRDecomposition(new Matrix(Y.getData()));
+      //      qr.
+      //      qr.
+      log.info("Memory used QR: "
+               + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+      //      QR
+      Y = MatrixUtils.createRealMatrix(qr.getQ().getArray());
+      log.info("Memory used get Q: "
+               + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+      log.info("Y dim:" + Y.getRowDimension() + "\t" + Y.getColumnDimension() + " BLOCK multiply");
 
-      Y = new QRDecomposition(Y).getQ();
       log.info("QR comp");
 
       //      Z <- crossprod_help(A , Y )
       RealMatrix Z = A.transpose().multiply(Y);
       log.info("Z");
 
-      Z = new QRDecomposition(Z).getQ();
+      Z = MatrixUtils.createRealMatrix(new QRDecomposition(new Matrix(Z.getData())).getQ()
+                                                                                   .getArray());
       Y = A.multiply(Z);
       //      O = C.multiply(O);
       //      O = new LUDecomposition(O).getL();
     }
-    Y = null;
-    A = null;
-    RealMatrix Q = new QRDecomposition(Y).getQ();
+    //    Y = null;
+    //    A = null;
+    //    RealMatrix Q = new QRDecomposition(Y).getQ();
+    RealMatrix Q = MatrixUtils.createRealMatrix(new QRDecomposition(new Matrix(Y.getData())).getQ()
+                                                                                            .getArray());
 
     RealMatrix B = Q.transpose().multiply(A);
     //
@@ -168,7 +183,7 @@ public class RandomizedSVD {
    */
   void dumpPCsToText(String file, Logger log) {
     //
-    RealMatrix v = transpose ? rsvd[2] : rsvd[0];
+    RealMatrix v = transpose ? rsvd[0] : rsvd[2];
     v = v.transpose();
     String[] pcNames = SVD.getNumberedColumnHeader("PC", v.getRowDimension());
 
@@ -218,7 +233,7 @@ public class RandomizedSVD {
    * @param log
    */
   void computeAndDumpLoadings(String file, Logger log) {
-    RealMatrix loadingData = transpose ? rsvd[0] : rsvd[2];
+    RealMatrix loadingData = transpose ? rsvd[2] : rsvd[0];
     String[] loadingNames = SVD.getNumberedColumnHeader("Loading",
                                                         loadingData.getColumnDimension());
     dumpMatrix(file, loadingData, "MARKER", loadingNames, originalRowNames, false, log);
