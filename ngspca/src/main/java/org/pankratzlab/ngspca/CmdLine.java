@@ -25,7 +25,9 @@ class CmdLine {
   static final String EXCLUDE_BED_FILE = "bedExclude";
   static final String N_ITERS = "iters";
   static final String OVERSAMPLE = "oversample";
+  static final String RANDOM_SEED = "randomSeed";
 
+  static final int DEFAULT_RANDOM_SEED = 42;
   static final int DEFAULT_PCS = 20;
   static final int DEFAULT_SAMPLE = 1;
   static final String DEFAULT_EXCLUDE_BED_FILE = null;
@@ -94,6 +96,11 @@ class CmdLine {
                                            + RandomizedSVD.DEFAULT_OVERSAMPLES)
                                      .required(false).build();
 
+    final Option randomSeed = Option.builder(RANDOM_SEED).hasArg(true).required()
+                                    .longOpt(RANDOM_SEED).hasArg()
+                                    .desc("Random seed for generating sampling matrix for randomized PCA (probably not worth changing the default)"
+                                          + DEFAULT_RANDOM_SEED)
+                                    .required(false).build();
     final Options options = new Options();
     options.addOption(help);
 
@@ -105,7 +112,7 @@ class CmdLine {
     options.addOption(bedExcludes);
     options.addOption(niter);
     options.addOption(oversamples);
-
+    options.addOption(randomSeed);
     options.addOption(overwrite);
 
     return options;

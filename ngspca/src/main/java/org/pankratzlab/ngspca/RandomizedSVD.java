@@ -23,7 +23,6 @@ import Jama.QRDecomposition;
 //
 public class RandomizedSVD {
 
-  private static final int RANDOM_SEED = 42;
   //  https://arxiv.org/pdf/1608.02148.pdf
   //  https://arxiv.org/pdf/0909.4061.pdf
   // Compute a (truncated) randomized SVD of a JBLAS DoubleMatrix
@@ -58,9 +57,10 @@ public class RandomizedSVD {
    *          increases the computational costs
    * @param numOversamples is an oversampling parameter to improve the approximation. A value of at
    *          least 10 is recommended,
+   * @param randomSeed random seed for sampling matrix
    */
-  public void fit(BlockRealMatrix A, int numberOfComponentsToStore, int niters,
-                  int numOversamples) {
+  public void fit(BlockRealMatrix A, int numberOfComponentsToStore, int niters, int numOversamples,
+                  int randomSeed) {
     this.numComponents = Math.min(numberOfComponentsToStore,
                                   Math.min(A.getColumnDimension(), A.getRowDimension()));
     if (numComponents < numberOfComponentsToStore) {
@@ -82,7 +82,7 @@ public class RandomizedSVD {
     }
     log.info("Selecting randomized Q");
 
-    RealMatrix O = randn(n, Math.min(n, numComponents + numOversamples));
+    RealMatrix O = randn(n, Math.min(n, numComponents + numOversamples), randomSeed);
     log.info("O dim:" + O.getRowDimension() + "\t" + O.getColumnDimension());
     RealMatrix Y = A.multiply(O);
     log.info("Beginning LU decomp iterations");
@@ -134,9 +134,9 @@ public class RandomizedSVD {
    * @return a {@link RealMatrix} populated with random values (deterministic random using
    *         {@link MersenneTwister})
    */
-  private static RealMatrix randn(int rows, int columns) {
+  private static RealMatrix randn(int rows, int columns, int randomSeed) {
     RealMatrix m = MatrixUtils.createRealMatrix(rows, columns);
-    MersenneTwister twister = new MersenneTwister(RANDOM_SEED);
+    MersenneTwister twister = new MersenneTwister(randomSeed);
 
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < columns; j++) {

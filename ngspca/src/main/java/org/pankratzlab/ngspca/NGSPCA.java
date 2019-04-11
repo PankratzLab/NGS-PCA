@@ -27,6 +27,7 @@ public class NGSPCA {
    * @param regionStrategy how to select markers for PCA
    * @param numPcs number of PCs to retain in the output file
    * @param sampleAt sample the mosdepth bins, once per this number
+   * @param randomSeed random seed for sampling matrix
    * @param overwrite overwrite any existing output
    * @param threads number of threads for loading bed files
    * @param log
@@ -36,7 +37,8 @@ public class NGSPCA {
    */
   private static void run(String input, String outputDir, String bedExclude,
                           REGION_STRATEGY regionStrategy, int numPcs, int niters,
-                          int numOversamples, int sampleAt, boolean overwrite, int threads,
+                          int numOversamples, int sampleAt, int randomSeed, boolean overwrite,
+                          int threads,
                           Logger log) throws InterruptedException, ExecutionException, IOException {
     new File(outputDir).mkdirs();
 
@@ -100,7 +102,7 @@ public class NGSPCA {
 
     RandomizedSVD svd = new RandomizedSVD(samples.toArray(new String[samples.size()]),
                                           regions.toArray(new String[regions.size()]), log);
-    svd.fit(dm, numPcs, niters, numOversamples);
+    svd.fit(dm, numPcs, niters, numOversamples, randomSeed);
     // perform SVD
 
     String pcs = outputDir + "svd.pcs.txt";
@@ -140,10 +142,13 @@ public class NGSPCA {
                                                        Integer.toString(RandomizedSVD.DEFAULT_NITERS)));
       int numOversamples = Integer.parseInt(cmd.getOptionValue(CmdLine.OVERSAMPLE,
                                                                Integer.toString(RandomizedSVD.DEFAULT_OVERSAMPLES)));
+
+      int randomSeed = Integer.parseInt(cmd.getOptionValue(CmdLine.RANDOM_SEED,
+                                                           Integer.toString(CmdLine.DEFAULT_RANDOM_SEED)));
       String bedExclude = cmd.getOptionValue(CmdLine.EXCLUDE_BED_FILE,
                                              CmdLine.DEFAULT_EXCLUDE_BED_FILE);
       run(input, outputDir, bedExclude, REGION_STRATEGY.AUTOSOMAL, numPcs, niters, numOversamples,
-          sampleAt, cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
+          sampleAt, randomSeed, cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
     } catch (Exception e) {
       log.log(Level.SEVERE, "an exception was thrown", e);
       log.severe("An exception occured while running\nFeel free to open an issue at https://github.com/PankratzLab/NGS-PCA after reviewing the help message below");
