@@ -146,6 +146,14 @@ public class RandomizedSVD {
     return m;
   }
 
+  public RealMatrix getV() {
+    return (transpose ? rsvd[0] : rsvd[2]);
+  }
+
+  public RealMatrix getW() {
+    return rsvd[1];
+  }
+
   /**
    * @param file dump the PCs to this text file
    * @param log
