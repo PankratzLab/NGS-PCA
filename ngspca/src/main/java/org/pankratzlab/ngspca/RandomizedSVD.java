@@ -82,14 +82,16 @@ public class RandomizedSVD {
     }
     log.info("Selecting randomized Q");
 
-    RealMatrix O = randn(n, Math.min(n, numComponents + numOversamples), randomSeed);
-    log.info("O dim:" + O.getRowDimension() + "\t" + O.getColumnDimension());
-    RealMatrix Y = A.multiply(O);
+    //    RealMatrix O = ;
+    //    log.info("O dim:" + O.getRowDimension() + "\t" + O.getColumnDimension());
+    RealMatrix Y = A.multiply(randn(n, Math.min(n, numComponents + numOversamples), randomSeed));
     log.info("Beginning LU decomp iterations");
     for (int i = 0; i < niters; i++) {
       log.info("Subspace iteration: " + Integer.toString(i));
       log.info("Y QR decomp");
+      //      new Matrix(Y.getData()).arrayTimes(B)
       QRDecomposition qr = new QRDecomposition(new Matrix(Y.getData()));
+      log.info("Converting to RealMatrix");
       Y = MatrixUtils.createRealMatrix(qr.getQ().getArray());
       log.info("Computing A Y cross prod");
       RealMatrix Z = A.transpose().multiply(Y);
