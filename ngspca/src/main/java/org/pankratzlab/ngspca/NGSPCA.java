@@ -100,6 +100,9 @@ public class NGSPCA {
       dm = (BlockRealMatrix) FileOps.readSerial(tmpDm, log);
     }
 
+    log.info("Oversampling set to: " + numOversamples);
+    log.info("Subspace iterations set to: " + niters);
+    log.info("Random seed set to: " + randomSeed);
     RandomizedSVD svd = new RandomizedSVD(samples.toArray(new String[samples.size()]),
                                           regions.toArray(new String[regions.size()]), log);
     svd.fit(dm, numPcs, niters, numOversamples, randomSeed);
