@@ -3,10 +3,12 @@ package org.pankratzlab.ngspca;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.math3.linear.BlockRealMatrix;
@@ -85,63 +87,6 @@ class MosdepthUtils {
    * @throws ExecutionException
    */
 
-  private static RealMatrix loadAndNormalizeDataOld(List<String> mosDepthResultFiles,
-                                                    Set<String> ucscRegions, int threads,
-                                                    Logger log) throws InterruptedException,
-                                                                ExecutionException {
-
-    // TODO use map to verify region indices
-    log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and "
-             + ucscRegions.size() + " rows");
-
-    //    RealMatrix dm = new (ucscRegions.size(), mosDepthResultFiles.size());
-    RealMatrix dm = MatrixUtils.createRealMatrix(ucscRegions.size(), mosDepthResultFiles.size());
-    //        new DenseMatrix64F(ucscRegions.size(), mosDepthResultFiles.size());
-
-    log.info("Starting input processing of " + mosDepthResultFiles.size() + " files");
-
-    ExecutorService executor = Executors.newFixedThreadPool(threads);
-    List<Future<BedRegionResult>> futures = new ArrayList<>();
-    for (String mosDepthResultFile : mosDepthResultFiles) {
-      futures.add(executor.submit(() -> BedUtils.loadSpecificRegions(mosDepthResultFile,
-                                                                     ucscRegions)));
-    }
-
-    int col = 0;
-    for (Future<BedRegionResult> future : futures) {
-      BedRegionResult current = future.get();
-      //      future.
-      String file = mosDepthResultFiles.get(col);
-      if (!file.equals(current.file)) {
-        throw new IllegalArgumentException("Invalid file returned, expecting " + file + " and got "
-                                           + current.file);
-      }
-      setColumnData(dm, col, mosDepthResultFiles.get(col), current.features, log);
-      col++;
-
-      if (col == 1 || col % 100 == 0) {
-        log.info("Set data for file " + Integer.toString(col));
-        log.info("Memory used: "
-                 + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
-      }
-    }
-    log.info("Normalizing input matrix");
-    NormalizationOperations.foldChangeAndCenterRows(dm);
-    executor.shutdown();
-    return dm;
-
-  }
-
-  /**
-   * @param mosDepthResultFiles mosdepth output bed files to be processed
-   * @param ucscRegions only these regions will be used
-   * @param threads number of threads to use when loading
-   * @param log
-   * @return normalized {@link DenseMatrix64F} holding all input files
-   * @throws InterruptedException
-   * @throws ExecutionException
-   */
-
   private static BlockRealMatrix loadAndNormalizeData(List<String> mosDepthResultFiles,
                                                       Set<String> ucscRegions, int threads,
                                                       Logger log) {
@@ -152,17 +97,53 @@ class MosdepthUtils {
 
     log.info("Starting input processing of " + mosDepthResultFiles.size() + " files");
     int col = 0;
-    for (String mosDepthResultFile : mosDepthResultFiles) {
+    //    https://dzone.com/articles/the-evolution-of-producer-consumer-problem-in-java
+    BlockingQueue<Future<BedRegionResult>> blockingQueue = new LinkedBlockingDeque<>(threads);
+    ExecutorService executor = Executors.newFixedThreadPool(threads);
 
-      setColumnData(dm, col, mosDepthResultFile,
-                    BedUtils.loadSpecificRegions(mosDepthResultFile, ucscRegions).features, log);
-      col++;
-      if (col == 1 || col % 200 == 0) {
-        log.info("Set data for file " + Integer.toString(col));
-        log.info("Memory used: "
-                 + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+    Runnable producerTask = () -> {
+      try {
+        for (String mosDepthResultFile : mosDepthResultFiles) {
+          blockingQueue.put(executor.submit(() -> BedUtils.loadSpecificRegions(mosDepthResultFile,
+                                                                               ucscRegions)));
+        }
+      } catch (InterruptedException e) {
+        log.severe(e.getMessage());
       }
+    };
+
+    executor.submit(producerTask);
+
+    for (String mosDepthResultFile : mosDepthResultFiles) {
+      try {
+        BedRegionResult current = blockingQueue.take().get();
+        String file = mosDepthResultFiles.get(col);
+        if (!file.equals(current.file)) {
+          throw new IllegalArgumentException("Invalid file returned, expecting " + file
+                                             + " and got " + current.file);
+        }
+        if (current.features.size() != ucscRegions.size()) {
+          throw new IllegalArgumentException("Invalid number of features from " + file
+                                             + "\n expected" + ucscRegions.size() + " and got "
+                                             + current.features.size());
+        }
+        setColumnData(dm, col, mosDepthResultFile, current.features, log);
+        col++;
+        if (col == 1 || col % 200 == 0) {
+          log.info("Set data for file " + Integer.toString(col));
+          log.info("Memory used: "
+                   + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+        }
+      } catch (InterruptedException e) {
+        log.severe(e.getMessage());
+
+      } catch (ExecutionException e) {
+        log.severe(e.getMessage());
+
+      }
+
     }
+    executor.shutdown();
     log.info("Normalizing input matrix");
     NormalizationOperations.foldChangeAndCenterRows(dm);
     return dm;
