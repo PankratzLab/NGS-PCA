@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.cli.CommandLine;
-import org.ejml.data.DenseMatrix64F;
+import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.pankratzlab.ngspca.BedUtils.BEDOverlapDetector;
 import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 
@@ -27,6 +27,7 @@ public class NGSPCA {
    * @param regionStrategy how to select markers for PCA
    * @param numPcs number of PCs to retain in the output file
    * @param sampleAt sample the mosdepth bins, once per this number
+   * @param randomSeed random seed for sampling matrix
    * @param overwrite overwrite any existing output
    * @param threads number of threads for loading bed files
    * @param log
@@ -35,8 +36,9 @@ public class NGSPCA {
    * @throws IOException
    */
   private static void run(String input, String outputDir, String bedExclude,
-                          REGION_STRATEGY regionStrategy, int numPcs, int sampleAt,
-                          boolean overwrite, int threads,
+                          REGION_STRATEGY regionStrategy, int numPcs, int niters,
+                          int numOversamples, int sampleAt, int randomSeed, boolean overwrite,
+                          int threads,
                           Logger log) throws InterruptedException, ExecutionException, IOException {
     new File(outputDir).mkdirs();
 
@@ -88,22 +90,24 @@ public class NGSPCA {
     String tmpDm = outputDir + "tmp.mat.ser.gz";
 
     // populate input matrix and normalize
-    DenseMatrix64F dm;
+    BlockRealMatrix dm;
     if (!FileOps.fileExists(tmpDm) || overwrite) {
       dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), threads,
                                       log);
       FileOps.writeSerial(dm, tmpDm, log);
     } else {
       log.info("Loading existing serialized file " + tmpDm);
-      dm = (DenseMatrix64F) FileOps.readSerial(tmpDm, log);
+      dm = (BlockRealMatrix) FileOps.readSerial(tmpDm, log);
     }
 
+    log.info("Oversampling set to: " + numOversamples);
+    log.info("Subspace iterations set to: " + niters);
+    log.info("Random seed set to: " + randomSeed);
+    RandomizedSVD svd = new RandomizedSVD(samples.toArray(new String[samples.size()]),
+                                          regions.toArray(new String[regions.size()]), log);
+    svd.fit(dm, numPcs, niters, numOversamples, randomSeed);
     // perform SVD
-    SVD svd = new SVD(samples.toArray(new String[samples.size()]),
-                      regions.toArray(new String[regions.size()]));
-    svd.computeSVD(dm, numPcs, log);
 
-    // output results
     String pcs = outputDir + "svd.pcs.txt";
     String loadings = outputDir + "svd.loadings.txt";
     String singularValues = outputDir + "svd.singularvalues.txt";
@@ -111,7 +115,7 @@ public class NGSPCA {
     log.info("Writing to " + pcs);
     svd.dumpPCsToText(pcs, log);
     log.info("Writing to " + loadings);
-    svd.computeAndDumpLoadings(loadings, dm, log);
+    svd.computeAndDumpLoadings(loadings, log);
     log.info("Writing to " + singularValues);
     svd.dumpSingularValuesToText(singularValues, log);
   }
@@ -137,15 +141,21 @@ public class NGSPCA {
       int sampleAt = Integer.parseInt(cmd.getOptionValue(CmdLine.NUM_SAMPLE_ARG,
                                                          Integer.toString(CmdLine.DEFAULT_SAMPLE)));
 
+      int niters = Integer.parseInt(cmd.getOptionValue(CmdLine.N_ITERS,
+                                                       Integer.toString(RandomizedSVD.DEFAULT_NITERS)));
+      int numOversamples = Integer.parseInt(cmd.getOptionValue(CmdLine.OVERSAMPLE,
+                                                               Integer.toString(RandomizedSVD.DEFAULT_OVERSAMPLES)));
+
+      int randomSeed = Integer.parseInt(cmd.getOptionValue(CmdLine.RANDOM_SEED,
+                                                           Integer.toString(CmdLine.DEFAULT_RANDOM_SEED)));
       String bedExclude = cmd.getOptionValue(CmdLine.EXCLUDE_BED_FILE,
                                              CmdLine.DEFAULT_EXCLUDE_BED_FILE);
-      run(input, outputDir, bedExclude, REGION_STRATEGY.AUTOSOMAL, numPcs, sampleAt,
-          cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
+      run(input, outputDir, bedExclude, REGION_STRATEGY.AUTOSOMAL, numPcs, niters, numOversamples,
+          sampleAt, randomSeed, cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
     } catch (Exception e) {
       log.log(Level.SEVERE, "an exception was thrown", e);
       log.severe("An exception occured while running\nFeel free to open an issue at https://github.com/PankratzLab/NGS-PCA after reviewing the help message below");
       CmdLine.printHelp(log, CmdLine.generateOptions());
-
     }
   }
 }
