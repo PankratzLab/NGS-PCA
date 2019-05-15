@@ -17,15 +17,11 @@ import org.apache.commons.math3.random.MersenneTwister;
 import Jama.Matrix;
 import Jama.QRDecomposition;
 
-// https://raw.githubusercontent.com/yunjhongwu/matrix-routines/master/randomized_svd.java
-// https://stackoverflow.com/questions/8677946/handle-large-sized-matrix-in-java/8678180 ... (Don't
-// do it :) )
-//
 public class RandomizedSVD {
 
-  //  https://arxiv.org/pdf/1608.02148.pdf
   //  https://arxiv.org/pdf/0909.4061.pdf
-  // Compute a (truncated) randomized SVD of a JBLAS DoubleMatrix
+  //  Compute a (truncated) randomized SVD of a BlockRealMatrix
+  // Implementation is similar to http://arxiv.org/abs/1608.02148
   private int numComponents;
   static final int DEFAULT_NITERS = 10;
   static final int DEFAULT_OVERSAMPLES = 200;
@@ -77,19 +73,15 @@ public class RandomizedSVD {
     if (transpose) {
       log.info("Transposing, since row N <column N");
       A = A.transpose();
-      //      m = A.getRowDimension();
       n = A.getColumnDimension();
     }
     log.info("Selecting randomized Q");
 
-    //    RealMatrix O = ;
-    //    log.info("O dim:" + O.getRowDimension() + "\t" + O.getColumnDimension());
     RealMatrix Y = A.multiply(randn(n, Math.min(n, numComponents + numOversamples), randomSeed));
     log.info("Beginning LU decomp iterations");
     for (int i = 0; i < niters; i++) {
       log.info("Subspace iteration: " + Integer.toString(i));
       log.info("Y QR decomp");
-      //      new Matrix(Y.getData()).arrayTimes(B)
       QRDecomposition qr = new QRDecomposition(new Matrix(Y.getData()));
       log.info("Converting to RealMatrix");
       Y = MatrixUtils.createRealMatrix(qr.getQ().getArray());

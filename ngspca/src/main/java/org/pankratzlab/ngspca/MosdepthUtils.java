@@ -1,6 +1,5 @@
 package org.pankratzlab.ngspca;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -12,7 +11,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.math3.linear.BlockRealMatrix;
-import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.ejml.data.DenseMatrix64F;
 import org.pankratzlab.ngspca.BedUtils.BEDOverlapDetector;
