@@ -9,6 +9,11 @@ import org.apache.commons.math3.stat.ranking.NaNStrategy;
  */
 public class NormalizationOperations {
 
+  /**
+   * 0.005 is half the lowest value given by mosdepth
+   */
+  private static final double MIN_DEPTH = 0.005;
+
   private NormalizationOperations() {
 
   }
@@ -44,12 +49,8 @@ public class NormalizationOperations {
     for (int row = 0; row < dm.getRowDimension(); row++) {
       for (int column = 0; column < dm.getColumnDimension(); column++) {
         double entry = dm.getEntry(row, column);
-        if (entry > 0) {
-          double standard = log2(entry / medians[column]);
-          dm.setEntry(row, column, standard);
-        } else {
-          dm.setEntry(row, column, 0);
-        }
+        double standard = log2(Math.max(entry, MIN_DEPTH) / medians[column]);
+        dm.setEntry(row, column, standard);
       }
     }
   }
