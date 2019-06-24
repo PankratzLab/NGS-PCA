@@ -30,7 +30,7 @@
 threshold=1.0
 
  # 25 35 50 100 125 150
-for kmer in 100 125 150; do
+for kmer in 50; do
 
 
 # Pull out regions with mappability < threshold
@@ -39,7 +39,7 @@ awk -v threshold="$threshold" '$5 < threshold {print}' GRCh38_full_analysis_set_
 bedtools merge -i GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_$kmer.$threshold.bed >GRCh38_full_analysis_set_plus_decoy_hla.chr1-chr22-X-Y-M_$kmer.$threshold.merge.bed
 
 
-## Download sv_blacklist.bed http://cf.10xgenomics.com/supp/genome/GRCh38/sv_blacklist.bed
+## Download sv_blacklist.bed wget "http://cf.10xgenomics.com/supp/genome/hg19/sv_blacklist.bed"
 
 cut -f 1-3 sv_blacklist.bed >ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.bed
 
@@ -54,7 +54,7 @@ bedtools merge -i ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.sorted.
 # gzip ~/git/NGS-PCA/resources/ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.sorted.merge.bed
 
 
-#Download DGV database wget "http://dgv.tcag.ca/dgv/docs/GRCh38_hg38_variants_2016-08-31.txt"
+#Download DGV database wget "http://dgv.tcag.ca/dgv/docs/GRCh37_hg19_variants_2016-05-15.txt"
 
 awk '{print "chr"$2"\t"$3"\t"$4}' GRCh38_hg38_variants_2016-08-31.txt |grep -v "start" > ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.bed
 cat ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.sorted.merge.bed >> ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.bed
@@ -68,7 +68,7 @@ cp ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.sorted.merge.bed ~
 gzip ~/git/NGS-PCA/resources/ngs_pca_exclude.sv_blacklist.map.kmer.$kmer.$threshold.dgv.sorted.merge.bed
 
 #Download genomic super dups
-# wget "http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=702540801_8IaaqO5dkQAKhgPYZAcpPOaA5Rhd&boolshad.hgta_printCustomTrackHeaders=0&hgta_ctName=tb_genomicSuperDups&hgta_ctDesc=table+browser+query+on+genomicSuperDups&hgta_ctVis=pack&hgta_ctUrl=&fbQual=whole&fbUpBases=200&fbDownBases=200&hgta_doGetBed=get+BED"
+# wget "http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=731602383_GulztZgzp8MK2XZ0Wy0KPpNgedDb&boolshad.hgta_printCustomTrackHeaders=0&hgta_ctName=tb_genomicSuperDups&hgta_ctDesc=table+browser+query+on+genomicSuperDups&hgta_ctVis=pack&hgta_ctUrl=&fbQual=whole&fbUpBases=200&fbDownBases=200&hgta_doGetBed=get+BED"
 # mv hgTables\?hgsid\=702540801_8IaaqO5dkQAKhgPYZAcpPOaA5Rhd\&boolshad.hgta_printCustomTrackHeaders\=0\&hgta_ctName\=tb_genomicSuperDups\&hgta_ctDesc\=table+browser+query+on+genomicSuperDups\&hgta_ctVis\=pack\&hgta_ctUrl\=\&fbQual\=whole\&fbUpBases\=200\&fbD genomicSuperDups.hg38.bed
 
 
