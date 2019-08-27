@@ -1,6 +1,5 @@
 package org.pankratzlab.ngspca;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,9 +55,10 @@ public class BedUtils {
    */
   static BedRegionResult loadSpecificRegions(String file, Set<String> ucscRegions) {
     BEDFileReader reader = new BEDFileReader(file, false);
-    List<BEDFeature> result = reader.iterator().stream()
-                                    .filter(bf -> ucscRegions.contains(getBedUCSC(bf)))
-                                    .collect(Collectors.toList());
+    CloseableIterator<BEDFeature> iter = reader.iterator();
+    List<BEDFeature> result = iter.stream().filter(bf -> ucscRegions.contains(getBedUCSC(bf)))
+                                  .collect(Collectors.toList());
+    iter.close();
     reader.close();
 
     return new BedRegionResult(file, result);
@@ -108,7 +108,7 @@ public class BedUtils {
     return new BEDFileReader(file, requireIndex);
   }
 
-  static class BEDFileReader implements Closeable, Iterable<BEDFeature> {
+  static class BEDFileReader implements Iterable<BEDFeature> {
 
     private final FeatureReader<BEDFeature> reader;
 
