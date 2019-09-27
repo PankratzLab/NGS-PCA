@@ -96,6 +96,8 @@ public class NGSPCA {
                                       log);
       FileOps.writeSerial(dm, tmpDm, log);
     } else {
+      System.out.print("Loading");
+      System.err.print("Loading");
       log.info("Loading existing serialized file " + tmpDm);
       dm = (BlockRealMatrix) FileOps.readSerial(tmpDm, log);
     }
