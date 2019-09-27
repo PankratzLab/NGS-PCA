@@ -78,6 +78,10 @@ public class RandomizedSVD {
     log.info("Selecting randomized Q");
 
     RealMatrix Y = A.multiply(randn(n, Math.min(n, numComponents + numOversamples), randomSeed));
+
+    log.info("Caching A_t");
+    BlockRealMatrix A_t = A.transpose();
+
     log.info("Beginning LU decomp iterations");
     for (int i = 0; i < niters; i++) {
       log.info("Subspace iteration: " + Integer.toString(i));
@@ -86,7 +90,7 @@ public class RandomizedSVD {
       log.info("Converting to RealMatrix");
       Y = MatrixUtils.createRealMatrix(qr.getQ().getArray());
       log.info("Computing A Y cross prod");
-      RealMatrix Z = A.transpose().multiply(Y);
+      RealMatrix Z = A_t.multiply(Y);
       log.info("Z QR decomp");
       Z = MatrixUtils.createRealMatrix(new QRDecomposition(new Matrix(Z.getData())).getQ()
                                                                                    .getArray());
