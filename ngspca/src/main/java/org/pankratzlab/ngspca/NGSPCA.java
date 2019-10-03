@@ -87,19 +87,22 @@ public class NGSPCA {
       log.info("Sampled " + regions.size() + " bins");
 
     }
-    String tmpDm = outputDir + "tmp.mat.ser.gz";
+    // Store the raw input matrix
+    String tmpRawDm = outputDir + "tmp.raw.ser.gz";
+    // Store the temporary input matrix
+    String tmpNormDm = outputDir + "tmp.mat.ser.gz";
 
     // populate input matrix and normalize
     BlockRealMatrix dm;
-    if (!FileOps.fileExists(tmpDm) || overwrite) {
-      dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), threads,
-                                      log);
-      FileOps.writeSerial(dm, tmpDm, log);
+    if (!FileOps.fileExists(tmpNormDm) || overwrite) {
+      dm = MosdepthUtils.processFiles(mosDepthResultFiles, new HashSet<String>(regions), tmpRawDm,
+                                      threads, log);
+      FileOps.writeSerial(dm, tmpNormDm, log);
     } else {
       System.out.print("Loading");
       System.err.print("Loading");
-      log.info("Loading existing serialized file " + tmpDm);
-      dm = (BlockRealMatrix) FileOps.readSerial(tmpDm, log);
+      log.info("Loading existing serialized file " + tmpNormDm);
+      dm = (BlockRealMatrix) FileOps.readSerial(tmpNormDm, log);
     }
 
     log.info("Oversampling set to: " + numOversamples);
