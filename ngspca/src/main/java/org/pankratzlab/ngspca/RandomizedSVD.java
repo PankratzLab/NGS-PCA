@@ -14,6 +14,8 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.random.MersenneTwister;
+import org.apache.commons.math3.stat.descriptive.rank.Median;
+import org.apache.commons.math3.stat.ranking.NaNStrategy;
 import Jama.Matrix;
 import Jama.QRDecomposition;
 
@@ -64,6 +66,7 @@ public class RandomizedSVD {
                + numComponents);
     }
     log.info("Initializing matrices");
+    
     int m = A.getRowDimension();
     int n = A.getColumnDimension();
     transpose = m < n;
