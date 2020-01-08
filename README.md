@@ -55,4 +55,4 @@ java -Xmx60G -jar "$jar" \
 ```
 `ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed` can be found [here](https://github.com/PankratzLab/NGS-PCA/blob/master/resources/GRCh38/ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed.gz)
 
-The latest jar can be downloaded from the latest release https://github.com/PankratzLab/NGS-PCA/releases
+The jar can be downloaded from the the latest release https://github.com/PankratzLab/NGS-PCA/releases or https://github.com/PankratzLab/NGS-PCA/blob/master/build/ngspca-0.01-SNAPSHOT.846fb69.jar
