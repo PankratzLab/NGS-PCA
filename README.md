@@ -56,3 +56,15 @@ java -Xmx60G -jar "$jar" \
 `ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed` can be found [here](https://github.com/PankratzLab/NGS-PCA/blob/master/resources/GRCh38/ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed.gz)
 
 The jar can be downloaded from the the latest release https://github.com/PankratzLab/NGS-PCA/releases or https://github.com/PankratzLab/NGS-PCA/blob/master/build/ngspca-0.01-SNAPSHOT.846fb69.jar
+
+The ngspca jar will essentially:
+
+1. Select autosomal bins that do not overlap any region in the excluded bed
+2. Normalize input data ( https://github.com/PankratzLab/NGS-PCA )
+	 - Normalize within sample by computing fold change 
+		 - log2(coverage of bin / median coverage of all selected bins)
+	- Center each bin to median fold-change of 0 across all samples 
+3. Perform Randomized PCA
+	- Described in https://epubs.siam.org/doi/abs/10.1137/090771806 and https://epubs.siam.org/doi/abs/10.1137/100804139
+  - Similar to the https://github.com/erichson/rSVD R package
+
