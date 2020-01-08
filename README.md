@@ -60,7 +60,7 @@ The jar can be downloaded from the the latest release https://github.com/Pankrat
 The ngspca jar will essentially:
 
 1. Select autosomal bins that do not overlap any region in the excluded bed
-2. Normalize input data ( https://github.com/PankratzLab/NGS-PCA )
+2. Normalize input data
 	- Normalize within sample by computing fold change 
 		- log2(coverage of bin / median coverage of all selected bins)
 	- Center each bin to median fold-change of 0 across all samples 
