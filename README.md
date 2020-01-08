@@ -47,7 +47,7 @@ java -Xmx60G -jar "$jar" \
 -numPC $numPCs \
 -sampleEvery 0 \
 -threads $ngsPCAThreads \
--iters 	10 \
+-iters 	100 \
 -randomSeed 42 \
 -oversample 100 \
 -bedExclude $ngsPCAExcludeRegions
