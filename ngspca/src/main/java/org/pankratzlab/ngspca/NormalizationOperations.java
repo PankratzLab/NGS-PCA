@@ -1,5 +1,6 @@
 package org.pankratzlab.ngspca;
 
+import java.util.logging.Logger;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.stat.ranking.NaNStrategy;
@@ -23,9 +24,9 @@ public class NormalizationOperations {
    * 
    * @param m an {@link RealMatrix} that has been FC-ed by column and centered by row
    */
-  static void foldChangeAndCenterRows(RealMatrix dm) {
+  static void foldChangeAndCenterRows(RealMatrix dm, Logger log) {
     // compute fold change
-    computeFoldChangeByColumn(dm);
+    computeFoldChangeByColumn(dm, log);
     // center rows to median of 0
     centerRowsToMedian(dm);
   }
@@ -35,7 +36,7 @@ public class NormalizationOperations {
    * 
    * @param dm the {@link RealMatrix} that will be converted
    */
-  private static void computeFoldChangeByColumn(RealMatrix dm) {
+  private static void computeFoldChangeByColumn(RealMatrix dm, Logger log) {
     double[] medians = new double[dm.getColumnDimension()];
 
     // convert columns to log2 fold-change from median
@@ -44,12 +45,16 @@ public class NormalizationOperations {
       for (int row = 0; row < dm.getRowDimension(); row++) {
         tmp[row] += dm.getEntry(row, column);
       }
-      medians[column] = median(tmp);
+      medians[column] = Math.max(median(tmp), MIN_DEPTH);
     }
     for (int row = 0; row < dm.getRowDimension(); row++) {
       for (int column = 0; column < dm.getColumnDimension(); column++) {
         double entry = dm.getEntry(row, column);
         double standard = log2(Math.max(entry, MIN_DEPTH) / medians[column]);
+        if (Double.isNaN(standard)) {
+          throw new IllegalArgumentException("Invalid sample normalized value ("
+                                             + Double.toString(Double.NaN) + ") detected");
+        }
         dm.setEntry(row, column, standard);
       }
     }

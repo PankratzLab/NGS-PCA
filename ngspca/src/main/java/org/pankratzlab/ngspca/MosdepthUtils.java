@@ -65,14 +65,14 @@ class MosdepthUtils {
    * @throws ExecutionException
    */
   static BlockRealMatrix processFiles(List<String> mosDepthResultFiles, Set<String> ucscRegions,
-                                      int threads,
+                                      String tmpRawFile, int threads,
                                       Logger log) throws InterruptedException, ExecutionException {
     if (mosDepthResultFiles.isEmpty()) {
       String err = "No input files provided";
       log.severe(err);
       throw new IllegalArgumentException(err);
     }
-    return loadAndNormalizeData(mosDepthResultFiles, ucscRegions, threads, log);
+    return loadAndNormalizeData(mosDepthResultFiles, ucscRegions, tmpRawFile, threads, log);
   }
 
   /**
@@ -86,8 +86,8 @@ class MosdepthUtils {
    */
 
   private static BlockRealMatrix loadAndNormalizeData(List<String> mosDepthResultFiles,
-                                                      Set<String> ucscRegions, int threads,
-                                                      Logger log) {
+                                                      Set<String> ucscRegions, String tmpRawFile,
+                                                      int threads, Logger log) {
 
     log.info("Initializing matrix to " + mosDepthResultFiles.size() + " columns and "
              + ucscRegions.size() + " rows");
@@ -142,8 +142,11 @@ class MosdepthUtils {
 
     }
     executor.shutdown();
+    log.info("Saving temporary raw matrix to " + tmpRawFile);
+    FileOps.writeSerial(dm, tmpRawFile, log);
+
     log.info("Normalizing input matrix");
-    NormalizationOperations.foldChangeAndCenterRows(dm);
+    NormalizationOperations.foldChangeAndCenterRows(dm, log);
     return dm;
 
   }
