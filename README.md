@@ -27,8 +27,8 @@ find "$dirOfBams" -type f -name "*.bam" \
 
 ## Run ngs pca
 
-The number of PCs to compute should be in the range of 5% of your sample size and likely far more than you'll actually use
-We're still working on optimizing the number of iterations and oversample parameter - but this should be reasonable
+The number of PCs to compute should be in the range of 5% of your sample size and likely far more than you'll actually use.
+We're still working on optimizing the number of iterations and oversample parameter - but this should be reasonable.
 This will generate svd.pcs.txt in the output directory
 
 
