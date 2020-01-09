@@ -11,7 +11,7 @@ There are lots of ways to do this, including downloading a linux executable, as 
 The "--by 1000" (compute coverage on 1000bp bins) is really the only important argument, and each run is going to look something like this:
 `mosdepth -n -t 1 --by 1000 --fasta /path/to/GRCh38_full_analysis_set_plus_decoy_hla.fa output_filename input_filename.bam`
 
-but here is an example script to iterate over all BAM files in a directory (could be run on CRAM files as well
+but here is an example script to iterate over all BAM files in a directory (could be run on CRAM files as well)
 
 ```bash
 ref=/path/to/GRCh38_full_analysis_set_plus_decoy_hla.fa
@@ -54,9 +54,17 @@ java -Xmx60G -jar "$jar" \
 -bedExclude $ngsPCAExcludeRegions
 
 ```
-`ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed` can be found [here](https://github.com/PankratzLab/NGS-PCA/blob/master/resources/GRCh38/ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed.gz)
+### Exclude bed
+
+`ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed` can be found [here](https://github.com/PankratzLab/NGS-PCA/blob/master/resources/GRCh38/ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed.gz). This bed file is suitable for analysis of WGS samples. 
+
+For WES, the WGS exclude bed file can be concatenated with the bed file that defines the exome targets, where the targets have first been buffered by 20kb. A pre-made WES exclude bed suitable for UKB samples can be found [here](https://github.com/PankratzLab/NGS-PCA/blob/master/resources/GRCh38/UKB_WES/ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.xgen.sorted.merge.bed.gz). The original targets used to generate this file are sourced from http://biobank.ndph.ox.ac.uk/showcase/refer.cgi?id=3801 and can be retrieved with `wget  -nd  biobank.ndph.ox.ac.uk/showcase/showcase/auxdata/xgen_plus_spikein.b38.bed`
+
+
+### Brief pipeline description
 
 The jar can be downloaded from the the latest release https://github.com/PankratzLab/NGS-PCA/releases or https://github.com/PankratzLab/NGS-PCA/blob/master/build/ngspca-0.01-SNAPSHOT.846fb69.jar
+
 
 The ngspca jar will essentially:
 
