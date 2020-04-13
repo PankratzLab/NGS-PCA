@@ -116,6 +116,8 @@ public class NGSPCA {
     String pcs = outputDir + "svd.pcs.txt";
     String loadings = outputDir + "svd.loadings.txt";
     String singularValues = outputDir + "svd.singularvalues.txt";
+    String binsUsed = outputDir + "svd.bins.txt";
+    String samplesUsed = outputDir + "svd.samples.txt";
 
     log.info("Writing to " + pcs);
     svd.dumpPCsToText(pcs, log);
@@ -123,6 +125,10 @@ public class NGSPCA {
     svd.computeAndDumpLoadings(loadings, log);
     log.info("Writing to " + singularValues);
     svd.dumpSingularValuesToText(singularValues, log);
+    log.info("Writing to " + binsUsed);
+    FileOps.writeToText(regions, binsUsed, log);
+    log.info("Writing to " + samplesUsed);
+    FileOps.writeToText(samples, samplesUsed, log);
   }
 
   public static void main(String[] args) {

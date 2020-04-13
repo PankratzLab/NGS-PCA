@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -76,5 +77,19 @@ public class FileOps {
     }
     return null;
 
+  }
+  static void writeToText(List<String> list, String filename,Logger log) {
+    
+    try {
+      FileWriter writer = new FileWriter(filename);
+      for(String str: list) {
+        writer.write(str + System.lineSeparator());
+
+      }
+      writer.close();
+    } catch (IOException e1) {
+      log.log(Level.SEVERE, "an exception was thrown while writing to "+filename, e1);
+    } 
+   
   }
 }
