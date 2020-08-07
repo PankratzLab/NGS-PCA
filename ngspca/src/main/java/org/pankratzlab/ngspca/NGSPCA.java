@@ -104,12 +104,17 @@ public class NGSPCA {
       log.info("Loading existing serialized file " + tmpNormDm);
       dm = (BlockRealMatrix) FileOps.readSerial(tmpNormDm, log);
     }
+    //    String inputMatrix = outputDir + "svd.norm.input.txt";
+    //    log.info("Writing to " + inputMatrix);
+    //
+    //    RandomizedSVD.dumpMatrix(inputMatrix, dm, "BIN", samples.toArray(new String[samples.size()]),
+    //                             regions.toArray(new String[regions.size()]), false, log);
+
+    RandomizedSVD svd = new RandomizedSVD(samples, regions, log);
 
     log.info("Oversampling set to: " + numOversamples);
     log.info("Subspace iterations set to: " + niters);
     log.info("Random seed set to: " + randomSeed);
-    RandomizedSVD svd = new RandomizedSVD(samples.toArray(new String[samples.size()]),
-                                          regions.toArray(new String[regions.size()]), log);
     svd.fit(dm, numPcs, niters, numOversamples, randomSeed);
     // perform SVD
 

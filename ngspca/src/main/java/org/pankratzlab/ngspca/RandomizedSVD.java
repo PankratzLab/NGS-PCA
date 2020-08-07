@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,8 +15,6 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.commons.math3.stat.descriptive.rank.Median;
-import org.apache.commons.math3.stat.ranking.NaNStrategy;
 import Jama.Matrix;
 import Jama.QRDecomposition;
 
@@ -34,13 +33,13 @@ public class RandomizedSVD {
   /**
    * Column names of the original input data
    */
-  private final String[] originalColNames;
+  private final List<String> originalColNames;
   /**
    * Row names of the original input data
    */
-  private final String[] originalRowNames;
+  private final List<String> originalRowNames;
 
-  public RandomizedSVD(String[] originalColNames, String[] originalRowNames, Logger log) {
+  public RandomizedSVD(List<String> originalColNames, List<String> originalRowNames, Logger log) {
     this.originalColNames = originalColNames;
     this.originalRowNames = originalRowNames;
     this.log = log;
@@ -166,13 +165,13 @@ public class RandomizedSVD {
     //
     RealMatrix v = rsvd[2];
     v = v.transpose();
-    String[] pcNames = SVD.getNumberedColumnHeader("PC", v.getRowDimension());
+    List<String> pcNames = SVD.getNumberedColumnHeader("PC", v.getRowDimension());
 
     dumpMatrix(file, v, "SAMPLE", pcNames, originalColNames, true, log);
   }
 
   private static void dumpMatrix(String file, RealMatrix m, String rowTitle,
-                                 String[] outputColumnNames, String[] outputRowNames,
+                                 List<String> outputColumnNames, List<String> outputRowNames,
                                  boolean transposed, Logger log) {
     try (PrintWriter writer = new PrintWriter(new File(file))) {
 
@@ -182,13 +181,13 @@ public class RandomizedSVD {
         joiner.add(colName);
       }
       writer.println(joiner.toString());
-      log.info(outputRowNames.length + " output rows by " + outputColumnNames.length
+      log.info(outputRowNames.size() + " output rows by " + outputColumnNames.size()
                + " output columns");
 
-      for (int outputRow = 0; outputRow < outputRowNames.length; outputRow++) {
+      for (int outputRow = 0; outputRow < outputRowNames.size(); outputRow++) {
         StringJoiner sample = new StringJoiner("\t");
-        sample.add(outputRowNames[outputRow]);
-        for (int outputColumn = 0; outputColumn < outputColumnNames.length; outputColumn++) {
+        sample.add(outputRowNames.get(outputRow));
+        for (int outputColumn = 0; outputColumn < outputColumnNames.size(); outputColumn++) {
           if (transposed) {
             sample.add(Double.toString(m.getEntry(outputColumn, outputRow)));
           } else {
@@ -215,8 +214,8 @@ public class RandomizedSVD {
    */
   void computeAndDumpLoadings(String file, Logger log) {
     RealMatrix loadingData = rsvd[0];
-    String[] loadingNames = SVD.getNumberedColumnHeader("Loading",
-                                                        loadingData.getColumnDimension());
+    List<String> loadingNames = SVD.getNumberedColumnHeader("Loading",
+                                                            loadingData.getColumnDimension());
     dumpMatrix(file, loadingData, "MARKER", loadingNames, originalRowNames, false, log);
 
   }

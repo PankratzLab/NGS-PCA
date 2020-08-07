@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,11 +29,11 @@ class SVD implements Serializable {
   /**
    * Column names of the original input data
    */
-  private final String[] originalColNames;
+  private final List<String> originalColNames;
   /**
    * Row names of the original input data
    */
-  private final String[] originalRowNames;
+  private final List<String> originalRowNames;
 
   private SvdImplicitQrDecompose_D64 svd;
 
@@ -44,7 +46,7 @@ class SVD implements Serializable {
    * @param colNames
    * @param rowNames
    */
-  SVD(String[] colNames, String[] rowNames) {
+  SVD(List<String> colNames, List<String> rowNames) {
     super();
     this.originalColNames = colNames;
     this.originalRowNames = rowNames;
@@ -57,10 +59,10 @@ class SVD implements Serializable {
    */
 
   void computeSVD(DenseMatrix64F dm, int numberOfComponentsToStore, Logger log) {
-    if (dm.getNumCols() != originalColNames.length) {
+    if (dm.getNumCols() != originalColNames.size()) {
       throw new IllegalArgumentException("Mismatched column lengths");
     }
-    if (dm.getNumRows() != originalRowNames.length) {
+    if (dm.getNumRows() != originalRowNames.size()) {
       throw new IllegalArgumentException("Mismatched row lengths");
     }
     log.info("Computing EJML PCs");
@@ -106,7 +108,7 @@ class SVD implements Serializable {
     //
     DenseMatrix64F v = svd.getV(null, true);
 
-    String[] pcNames = getNumberedColumnHeader("PC", v.getNumRows());
+    List<String> pcNames = getNumberedColumnHeader("PC", v.getNumRows());
 
     dumpMatrix(file, v, "SAMPLE", pcNames, originalColNames, true, log);
   }
@@ -118,7 +120,7 @@ class SVD implements Serializable {
    */
   void computeAndDumpLoadings(String file, DenseMatrix64F dm, Logger log) {
     DenseMatrix64F loadingData = computeLoadings(dm);
-    String[] loadingNames = getNumberedColumnHeader("Loading", loadingData.getNumCols());
+    List<String> loadingNames = getNumberedColumnHeader("Loading", loadingData.getNumCols());
     dumpMatrix(file, loadingData, "MARKER", loadingNames, originalRowNames, false, log);
 
   }
@@ -144,16 +146,16 @@ class SVD implements Serializable {
 
   }
 
-  public static String[] getNumberedColumnHeader(String type, int num) {
-    String[] names = new String[num];
+  public static List<String> getNumberedColumnHeader(String type, int num) {
+    List<String> names = new ArrayList<>();
     for (int i = 0; i < num; i++) {
-      names[i] = type + (i + 1);
+      names.add(type + (i + 1));
     }
     return names;
   }
 
   private static void dumpMatrix(String file, DenseMatrix64F m, String rowTitle,
-                                 String[] outputColumnNames, String[] outputRowNames,
+                                 List<String> outputColumnNames, List<String> outputRowNames,
                                  boolean transposed, Logger log) {
     try (PrintWriter writer = new PrintWriter(new File(file))) {
 
@@ -163,13 +165,13 @@ class SVD implements Serializable {
         joiner.add(colName);
       }
       writer.println(joiner.toString());
-      log.info(outputRowNames.length + " output rows by " + outputColumnNames.length
+      log.info(outputRowNames.size() + " output rows by " + outputColumnNames.size()
                + " output columns");
 
-      for (int outputRow = 0; outputRow < outputRowNames.length; outputRow++) {
+      for (int outputRow = 0; outputRow < outputRowNames.size(); outputRow++) {
         StringJoiner sample = new StringJoiner("\t");
-        sample.add(outputRowNames[outputRow]);
-        for (int outputColumn = 0; outputColumn < outputColumnNames.length; outputColumn++) {
+        sample.add(outputRowNames.get(outputRow));
+        for (int outputColumn = 0; outputColumn < outputColumnNames.size(); outputColumn++) {
 
           //          sample.add(Double.toString(m.get(j, i)));
           if (transposed) {
