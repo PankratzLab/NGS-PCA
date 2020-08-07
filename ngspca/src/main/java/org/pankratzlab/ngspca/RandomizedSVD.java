@@ -66,18 +66,20 @@ public class RandomizedSVD {
                + numComponents);
     }
     log.info("Initializing matrices");
-    
+
     int m = A.getRowDimension();
     int n = A.getColumnDimension();
     transpose = m < n;
     rsvd[0] = MatrixUtils.createRealMatrix(A.getRowDimension(), numComponents);
     rsvd[1] = MatrixUtils.createRealMatrix(numComponents, 1);
     rsvd[2] = MatrixUtils.createRealMatrix(A.getColumnDimension(), numComponents);
+
     if (transpose) {
       log.info("Transposing, since row N <column N");
       A = A.transpose();
       n = A.getColumnDimension();
     }
+
     log.info("Selecting randomized Q");
 
     RealMatrix Y = A.multiply(randn(n, Math.min(n, numComponents + numOversamples), randomSeed));
@@ -125,6 +127,7 @@ public class RandomizedSVD {
         rsvd[1].setEntry(i, 0, svd.getSingularValues()[i]);
         rsvd[2].setColumn(i, svd.getV().getColumn(i));
       }
+
       log.info("Finished SVD");
     }
   }
@@ -161,7 +164,7 @@ public class RandomizedSVD {
    */
   void dumpPCsToText(String file, Logger log) {
     //
-    RealMatrix v = transpose ? rsvd[0] : rsvd[2];
+    RealMatrix v = rsvd[2];
     v = v.transpose();
     String[] pcNames = SVD.getNumberedColumnHeader("PC", v.getRowDimension());
 
@@ -211,7 +214,7 @@ public class RandomizedSVD {
    * @param log
    */
   void computeAndDumpLoadings(String file, Logger log) {
-    RealMatrix loadingData = transpose ? rsvd[2] : rsvd[0];
+    RealMatrix loadingData = rsvd[0];
     String[] loadingNames = SVD.getNumberedColumnHeader("Loading",
                                                         loadingData.getColumnDimension());
     dumpMatrix(file, loadingData, "MARKER", loadingNames, originalRowNames, false, log);
