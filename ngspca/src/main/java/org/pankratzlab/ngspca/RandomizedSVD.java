@@ -45,6 +45,14 @@ public class RandomizedSVD {
     this.log = log;
   }
 
+  List<String> getColumnNames() {
+    return originalColNames;
+  }
+
+  List<String> getRowNames() {
+    return originalRowNames;
+  }
+
   /**
    * @param A matrix to perform randomized PCA on
    * @param numberOfComponentsToStore number of PCs to compute

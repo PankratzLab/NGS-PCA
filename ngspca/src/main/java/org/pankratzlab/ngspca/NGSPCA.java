@@ -131,9 +131,9 @@ public class NGSPCA {
     log.info("Writing to " + singularValues);
     svd.dumpSingularValuesToText(singularValues, log);
     log.info("Writing to " + binsUsed);
-    FileOps.writeToText(regions, binsUsed, log);
+    FileOps.writeToText(svd.getRowNames(), binsUsed, log);
     log.info("Writing to " + samplesUsed);
-    FileOps.writeToText(samples, samplesUsed, log);
+    FileOps.writeToText(svd.getColumnNames(), samplesUsed, log);
   }
 
   public static void main(String[] args) {
