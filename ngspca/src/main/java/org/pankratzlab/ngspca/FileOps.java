@@ -3,6 +3,7 @@ package org.pankratzlab.ngspca;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,8 +11,13 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.FileUtils;
@@ -78,18 +84,62 @@ public class FileOps {
     return null;
 
   }
-  static void writeToText(List<String> list, String filename,Logger log) {
-    
+
+  static void writeToText(List<String> list, String filename, Logger log) {
+
     try {
       FileWriter writer = new FileWriter(filename);
-      for(String str: list) {
+      for (String str : list) {
         writer.write(str + System.lineSeparator());
 
       }
       writer.close();
     } catch (IOException e1) {
-      log.log(Level.SEVERE, "an exception was thrown while writing to "+filename, e1);
-    } 
-   
+      log.log(Level.SEVERE, "an exception was thrown while writing to " + filename, e1);
+    }
+
   }
+
+  static List<String> getColumn(String fileName, String delim, int columnNumber, Logger log) {
+
+    List<String> column = new ArrayList<>();
+
+    try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
+
+      column = stream.map(s -> s.split(delim)[columnNumber])           // Split by ; and get the 2nd column
+                     .collect(Collectors.toList());
+
+    } catch (IOException e) {
+      log.log(Level.SEVERE, "an exception was thrown while reading " + fileName, e);
+
+    } catch (ArrayIndexOutOfBoundsException e) {
+      log.log(Level.SEVERE, "invalid column index selected (" + columnNumber + ") in " + fileName,
+              e);
+
+    }
+    return column;
+
+  }
+
+  static List<String> getFileHeader(String filename, String delim, Logger log) {
+    File file = new File(filename);
+    Scanner scanner;
+    List<String> header = new ArrayList<String>();
+    try {
+      scanner = new Scanner(file);
+    } catch (FileNotFoundException e) {
+      log.log(Level.SEVERE, "an exception was thrown while reading " + filename, e);
+      return header;
+    }
+
+    if (scanner.hasNextLine()) {
+      String[] tmpA = scanner.nextLine().split(delim);
+      for (String tmp : tmpA) {
+        header.add(tmp);
+      }
+    }
+    scanner.close();
+    return header;
+  }
+
 }
