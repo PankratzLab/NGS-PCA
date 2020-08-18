@@ -56,7 +56,8 @@ class CmdLine {
     final Option inputOption = Option.builder("i").hasArg(true).longOpt(INPUT_ARG)
                                      .desc("An existing directory containing mosdepth result files (*"
                                            + MosdepthUtils.MOSDEPHT_BED_EXT
-                                           + " extension) OR a file listing paths to mosdepth result files, one result file per line  ")
+                                           + " extension) OR a file listing paths to mosdepth result files, one result file per line OR a matrix of values to directly use (see the "
+                                           + MATRIX_INPUT_ARG + " argument)")
                                      .required(true).build();
 
     final Option outputOption = Option.builder("o").hasArg(true).required().longOpt(OUTPUT_DIR_ARG)
@@ -103,7 +104,6 @@ class CmdLine {
                                           + DEFAULT_RANDOM_SEED)
                                     .required(false).build();
     final Option matrix = Option.builder(MATRIX_INPUT_ARG).hasArg(false).longOpt(MATRIX_INPUT_ARG)
-                                .hasArg()
                                 .desc("The input provided by " + INPUT_ARG
                                       + " is a matrix (i.e. SVD will be performed directly on the matrix, without normalization, to generate PCS")
                                 .required(false).build();
