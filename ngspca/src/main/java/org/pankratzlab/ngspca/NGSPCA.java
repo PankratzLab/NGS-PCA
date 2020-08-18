@@ -19,6 +19,21 @@ import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
  */
 public class NGSPCA {
 
+  private static void runInputMatrix(String inputMatrixFile, String outputDir, int numPcs,
+                                     int niters, int numOversamples, int sampleAt, int randomSeed,
+                                     boolean overwrite, Logger log) throws InterruptedException,
+                                                                    ExecutionException,
+                                                                    IOException {
+    List<String> regions = FileOps.getColumn(inputMatrixFile, "\t", 0, log);
+    List<String> samples = FileOps.getFileHeader(inputMatrixFile, "\t", log);
+    //Bin column
+    samples.remove(0);
+    BlockRealMatrix dm = new BlockRealMatrix(regions.size(), samples.size());
+
+    computeSVD(outputDir, numPcs, niters, numOversamples, randomSeed, log, samples, regions, dm);
+
+  }
+
   /**
    * @param input directory or file listing full paths containing MosDepth results, with extension
    *          {@link MosdepthUtils#MOSDEPHT_BED_EXT}
@@ -35,11 +50,12 @@ public class NGSPCA {
    * @throws ExecutionException
    * @throws IOException
    */
-  private static void run(String input, String outputDir, String bedExclude,
-                          REGION_STRATEGY regionStrategy, int numPcs, int niters,
-                          int numOversamples, int sampleAt, int randomSeed, boolean overwrite,
-                          int threads,
-                          Logger log) throws InterruptedException, ExecutionException, IOException {
+  private static void runMosdepth(String input, String outputDir, String bedExclude,
+                                  REGION_STRATEGY regionStrategy, int numPcs, int niters,
+                                  int numOversamples, int sampleAt, int randomSeed,
+                                  boolean overwrite, int threads,
+                                  Logger log) throws InterruptedException, ExecutionException,
+                                              IOException {
     new File(outputDir).mkdirs();
 
     String[] extensions = new String[] {MosdepthUtils.MOSDEPHT_BED_EXT};
@@ -110,6 +126,12 @@ public class NGSPCA {
     //    RandomizedSVD.dumpMatrix(inputMatrix, dm, "BIN", samples.toArray(new String[samples.size()]),
     //                             regions.toArray(new String[regions.size()]), false, log);
 
+    computeSVD(outputDir, numPcs, niters, numOversamples, randomSeed, log, samples, regions, dm);
+  }
+
+  static void computeSVD(String outputDir, int numPcs, int niters, int numOversamples,
+                         int randomSeed, Logger log, List<String> samples, List<String> regions,
+                         BlockRealMatrix dm) {
     RandomizedSVD svd = new RandomizedSVD(samples, regions, log);
 
     log.info("Oversampling set to: " + numOversamples);
@@ -166,8 +188,14 @@ public class NGSPCA {
                                                            Integer.toString(CmdLine.DEFAULT_RANDOM_SEED)));
       String bedExclude = cmd.getOptionValue(CmdLine.EXCLUDE_BED_FILE,
                                              CmdLine.DEFAULT_EXCLUDE_BED_FILE);
-      run(input, outputDir, bedExclude, REGION_STRATEGY.AUTOSOMAL, numPcs, niters, numOversamples,
-          sampleAt, randomSeed, cmd.hasOption(CmdLine.OVERWRITE_ARG), threads, log);
+      if (cmd.hasOption(CmdLine.MATRIX_INPUT_ARG)) {
+        runInputMatrix(input, outputDir, numPcs, niters, numOversamples, sampleAt, randomSeed,
+                       cmd.hasOption(CmdLine.OVERWRITE_ARG), log);
+      } else {
+        runMosdepth(input, outputDir, bedExclude, REGION_STRATEGY.AUTOSOMAL, numPcs, niters,
+                    numOversamples, sampleAt, randomSeed, cmd.hasOption(CmdLine.OVERWRITE_ARG),
+                    threads, log);
+      }
     } catch (Exception e) {
       log.log(Level.SEVERE, "an exception was thrown", e);
       log.severe("An exception occured while running\nFeel free to open an issue at https://github.com/PankratzLab/NGS-PCA after reviewing the help message below");
