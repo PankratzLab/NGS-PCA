@@ -2,6 +2,9 @@ package org.pankratzlab.ngspca;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -24,16 +27,38 @@ public class NGSPCA {
                                      boolean overwrite, Logger log) throws InterruptedException,
                                                                     ExecutionException,
                                                                     IOException {
-    List<String> regions = FileOps.getColumn(inputMatrixFile, "\t", 0, log);
-    List<String> samples = FileOps.getFileHeader(inputMatrixFile, "\t", log);
-    //Bin column
+    String delim = "\t";
+    log.info("Determining number of samples in " + inputMatrixFile);
+
+    List<String> samples = FileOps.getFileHeader(inputMatrixFile, delim, log);
     samples.remove(0);
     log.info("Found a total of " + samples.size() + " samples in " + inputMatrixFile);
+
+    log.info("Determining number of regions in " + inputMatrixFile);
+    List<String> regions = FileOps.getColumn(inputMatrixFile, delim, 0, log);
+
     regions.remove(0);
     log.info("Found a total of " + regions.size() + " regions in " + inputMatrixFile);
 
-    BlockRealMatrix dm = new BlockRealMatrix(regions.size(), samples.size());
+    BlockRealMatrix dm;
 
+    String tmpNormDm = outputDir + "tmp.mat.ser.gz";
+    if (!FileOps.fileExists(tmpNormDm) || overwrite) {
+      log.info("Populating matrix from " + inputMatrixFile);
+      log.info("Initializing matrix to " + samples.size() + " columns and " + regions.size()
+               + " rows");
+      dm = new BlockRealMatrix(regions.size(), samples.size());
+      int rowIndex = 0;
+      //add data to matrix, skippin header and first column of file
+      Files.lines(Paths.get(inputMatrixFile)).skip(1).map(l -> l.split(delim))
+           .forEach(a -> dm.setRow(rowIndex,
+                                   Utils.convertToDoubleArray(Arrays.copyOfRange(a, 1, a.length),
+                                                              log)));
+      FileOps.writeSerial(dm, tmpNormDm, log);
+    } else {
+      log.info("Loading existing serialized file " + tmpNormDm);
+      dm = (BlockRealMatrix) FileOps.readSerial(tmpNormDm, log);
+    }
     computeSVD(outputDir, numPcs, niters, numOversamples, randomSeed, log, samples, regions, dm);
 
   }
