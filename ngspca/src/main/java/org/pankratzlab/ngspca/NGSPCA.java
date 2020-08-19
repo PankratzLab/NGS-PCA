@@ -28,6 +28,10 @@ public class NGSPCA {
     List<String> samples = FileOps.getFileHeader(inputMatrixFile, "\t", log);
     //Bin column
     samples.remove(0);
+    log.info("Found a total of " + samples.size() + " samples in " + inputMatrixFile);
+    regions.remove(0);
+    log.info("Found a total of " + regions.size() + " regions in " + inputMatrixFile);
+
     BlockRealMatrix dm = new BlockRealMatrix(regions.size(), samples.size());
 
     computeSVD(outputDir, numPcs, niters, numOversamples, randomSeed, log, samples, regions, dm);
