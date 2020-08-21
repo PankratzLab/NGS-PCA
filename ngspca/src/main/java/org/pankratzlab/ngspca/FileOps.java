@@ -127,7 +127,7 @@ public class FileOps {
 
   }
 
-  private static Stream<String> gzLines(Path path, Logger log) {
+  static Stream<String> gzLines(Path path, Logger log) {
     InputStream fileIs = null;
     BufferedInputStream bufferedIs = null;
     GZIPInputStream gzipIs = null;
