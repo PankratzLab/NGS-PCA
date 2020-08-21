@@ -18,6 +18,7 @@ class CmdLine {
 
   static final String INPUT_ARG = "input";
   static final String MATRIX_INPUT_ARG = "matrix";
+  static final String NORM_MATRIX_INPUT_ARG = "normalizeMatrix";
   static final String OUTPUT_DIR_ARG = "outputDir";
   static final String OVERWRITE_ARG = "overwrite";
   static final String NUM_COMPONENTS_ARG = "numPC";
@@ -107,11 +108,17 @@ class CmdLine {
                                 .desc("The input provided by " + INPUT_ARG
                                       + " is a matrix (i.e. SVD will be performed directly on the matrix, without normalization, to generate PCS")
                                 .required(false).build();
+    final Option normMatrix = Option.builder(NORM_MATRIX_INPUT_ARG).hasArg(false)
+                                    .longOpt(NORM_MATRIX_INPUT_ARG)
+                                    .desc("The input provided by " + INPUT_ARG
+                                          + " is a matrix and should be normalized (log2 by sample/column, centered by row)")
+                                    .required(false).build();
     final Options options = new Options();
     options.addOption(help);
 
     options.addOption(inputOption);
     options.addOption(matrix);
+    options.addOption(normMatrix);
     options.addOption(outputOption);
     options.addOption(numComponents);
     options.addOption(numThreads);
