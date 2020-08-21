@@ -12,30 +12,37 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.pankratzlab.ngspca.BedUtils.BEDOverlapDetector;
 import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
 
 /**
- * A simplified version of BamImport that uses MosDepth output to generate PCS
+ * A simplified version of BamImport that uses MosDepth output or a custom input matrix to generate
+ * PCS
  */
 public class NGSPCA {
 
   private static void runInputMatrix(String inputMatrixFile, String outputDir, int numPcs,
                                      int niters, int numOversamples, int sampleAt, int randomSeed,
-                                     boolean overwrite, Logger log) throws InterruptedException,
-                                                                    ExecutionException,
-                                                                    IOException {
+                                     boolean overwrite, boolean normMatrix,
+                                     Logger log) throws InterruptedException, ExecutionException,
+                                                 IOException {
     String delim = "\t";
+    boolean gz = inputMatrixFile.endsWith(".gz");
+    if (gz) {
+      log.info("Assuming " + inputMatrixFile + " is gzipped");
+    }
+
     log.info("Determining number of samples in " + inputMatrixFile);
 
-    List<String> samples = FileOps.getFileHeader(inputMatrixFile, delim, log);
+    List<String> samples = FileOps.getFileHeader(inputMatrixFile, gz, delim, log);
     samples.remove(0);
     log.info("Found a total of " + samples.size() + " samples in " + inputMatrixFile);
 
     log.info("Determining number of regions in " + inputMatrixFile);
-    List<String> regions = FileOps.getColumn(inputMatrixFile, delim, 0, log);
+    List<String> regions = FileOps.getColumn(inputMatrixFile, gz, delim, 0, log);
 
     regions.remove(0);
     log.info("Found a total of " + regions.size() + " regions in " + inputMatrixFile);
@@ -48,12 +55,18 @@ public class NGSPCA {
       log.info("Initializing matrix to " + samples.size() + " columns and " + regions.size()
                + " rows");
       dm = new BlockRealMatrix(regions.size(), samples.size());
-      int rowIndex = 0;
-      //add data to matrix, skippin header and first column of file
-      Files.lines(Paths.get(inputMatrixFile)).skip(1).map(l -> l.split(delim))
-           .forEach(a -> dm.setRow(rowIndex,
-                                   Utils.convertToDoubleArray(Arrays.copyOfRange(a, 1, a.length),
-                                                              log)));
+      int[] rowIndex = {0};
+      //add data to matrix, skipping header and first column of file
+      Stream<String> stream = gz ? FileOps.gzLines(Paths.get(inputMatrixFile), log)
+                                 : Files.lines(Paths.get(inputMatrixFile));
+      stream.skip(1).map(l -> l.split(delim))
+            .forEach(a -> dm.setRow(rowIndex[0]++,
+                                    Utils.convertToDoubleArray(Arrays.copyOfRange(a, 1, a.length),
+                                                               log)));
+      if (normMatrix) {
+        log.info("Normalizing input matrix");
+        NormalizationOperations.foldChangeAndCenterRows(dm, log);
+      }
       FileOps.writeSerial(dm, tmpNormDm, log);
     } else {
       log.info("Loading existing serialized file " + tmpNormDm);
@@ -219,7 +232,8 @@ public class NGSPCA {
                                              CmdLine.DEFAULT_EXCLUDE_BED_FILE);
       if (cmd.hasOption(CmdLine.MATRIX_INPUT_ARG)) {
         runInputMatrix(input, outputDir, numPcs, niters, numOversamples, sampleAt, randomSeed,
-                       cmd.hasOption(CmdLine.OVERWRITE_ARG), log);
+                       cmd.hasOption(CmdLine.OVERWRITE_ARG),
+                       cmd.hasOption(CmdLine.NORM_MATRIX_INPUT_ARG), log);
       } else {
         runMosdepth(input, outputDir, bedExclude, REGION_STRATEGY.AUTOSOMAL, numPcs, niters,
                     numOversamples, sampleAt, randomSeed, cmd.hasOption(CmdLine.OVERWRITE_ARG),
