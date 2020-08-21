@@ -1,6 +1,8 @@
 package org.pankratzlab.ngspca;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -8,10 +10,12 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,11 +104,13 @@ public class FileOps {
 
   }
 
-  static List<String> getColumn(String fileName, String delim, int columnNumber, Logger log) {
+  static List<String> getColumn(String fileName, boolean gz, String delim, int columnNumber,
+                                Logger log) {
 
     List<String> column = new ArrayList<>();
 
-    try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
+    try (Stream<String> stream = gz ? gzLines(Paths.get(fileName), log)
+                                    : Files.lines(Paths.get(fileName))) {
 
       column = stream.map(s -> s.split(delim)[columnNumber])           // Split by ; and get the 2nd column
                      .collect(Collectors.toList());
@@ -121,24 +127,51 @@ public class FileOps {
 
   }
 
-  static List<String> getFileHeader(String filename, String delim, Logger log) {
-    File file = new File(filename);
-    Scanner scanner;
+  private static Stream<String> gzLines(Path path, Logger log) {
+    InputStream fileIs = null;
+    BufferedInputStream bufferedIs = null;
+    GZIPInputStream gzipIs = null;
+    try {
+      fileIs = Files.newInputStream(path);
+      bufferedIs = new BufferedInputStream(fileIs);
+      gzipIs = new GZIPInputStream(bufferedIs);
+    } catch (IOException e) {
+      log.log(Level.SEVERE, "an exception was thrown while reading " + path.toString(), e);
+      closeSafely(gzipIs, log);
+      closeSafely(bufferedIs, log);
+      closeSafely(fileIs, log);
+    }
+    BufferedReader reader = new BufferedReader(new InputStreamReader(gzipIs));
+    return reader.lines().onClose(() -> closeSafely(reader, log));
+  }
+
+  private static void closeSafely(Closeable closeable, Logger log) {
+    if (closeable != null) {
+      try {
+        closeable.close();
+      } catch (IOException e) {
+        log.log(Level.SEVERE, "an exception was thrown ", e);
+      }
+    }
+  }
+
+  static List<String> getFileHeader(String filename, boolean gz, String delim, Logger log) {
     List<String> header = new ArrayList<String>();
     try {
-      scanner = new Scanner(file);
-    } catch (FileNotFoundException e) {
-      log.log(Level.SEVERE, "an exception was thrown while reading " + filename, e);
-      return header;
-    }
-
-    if (scanner.hasNextLine()) {
-      String[] tmpA = scanner.nextLine().split(delim);
+      Stream<String> stream = gz ? gzLines(Paths.get(filename), log)
+                                 : Files.lines(Paths.get(filename));
+      String[] tmpA = stream.findFirst().get().split(delim);
       for (String tmp : tmpA) {
         header.add(tmp);
       }
+    } catch (FileNotFoundException e) {
+      log.log(Level.SEVERE, "an exception was thrown while reading " + filename, e);
+      return header;
+    } catch (IOException e) {
+      log.log(Level.SEVERE, "an exception was thrown while reading " + filename, e);
+
     }
-    scanner.close();
+
     return header;
   }
 
