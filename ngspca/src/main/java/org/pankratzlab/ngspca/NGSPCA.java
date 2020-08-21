@@ -29,6 +29,8 @@ public class NGSPCA {
                                      boolean overwrite, boolean normMatrix,
                                      Logger log) throws InterruptedException, ExecutionException,
                                                  IOException {
+    new File(outputDir).mkdirs();
+
     String delim = "\t";
     boolean gz = inputMatrixFile.endsWith(".gz");
     if (gz) {
