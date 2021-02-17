@@ -56,9 +56,9 @@ java -Xmx60G -jar "$jar" \
 ```
 ### Exclude bed
 
-`ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed` can be found [here](https://github.com/PankratzLab/NGS-PCA/blob/master/resources/GRCh38/ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed.gz). This bed file is suitable for analysis of WGS samples. 
+`ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed` can be found [here](https://github.com/PankratzLab/NGS-PCA/blob/master/resources/GRCh38/ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed.gz). This bed file is suitable for analysis of GRCh38/hg38 WGS samples. 
 
-For WES, the WGS exclude bed file can be concatenated with the bed file that defines the exome targets, where the targets have first been buffered by 20kb. A pre-made WES exclude bed suitable for UKB samples can be found [here](https://github.com/PankratzLab/NGS-PCA/blob/master/resources/GRCh38/UKB_WES/ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.xgen.sorted.merge.bed.gz). The original targets used to generate this file are sourced from http://biobank.ndph.ox.ac.uk/showcase/refer.cgi?id=3801 and can be retrieved with `wget  -nd  biobank.ndph.ox.ac.uk/showcase/showcase/auxdata/xgen_plus_spikein.b38.bed`
+For GRCh38/hg38 WES analysis, the WGS exclude bed file can be concatenated with the bed file that defines the exome targets, where the targets have first been buffered by 20kb. A pre-made WES exclude bed suitable for UKB samples can be found [here](https://github.com/PankratzLab/NGS-PCA/blob/master/resources/GRCh38/UKB_WES/ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.xgen.sorted.merge.bed.gz). The original targets used to generate this file are sourced from http://biobank.ndph.ox.ac.uk/showcase/refer.cgi?id=3801 and can be retrieved with `wget  -nd  biobank.ndph.ox.ac.uk/showcase/showcase/auxdata/xgen_plus_spikein.b38.bed`
 
 
 ### Brief pipeline description
