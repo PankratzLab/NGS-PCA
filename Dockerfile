@@ -1,60 +1,30 @@
-#https://hub.docker.com/r/junhanlin/ubuntu-git-java-maven/dockerfile
-# Ubuntu 14.04 LTS
-# Oracle Java 1.8.0_11 64 bit
-# Maven 3.2.2
-# git 1.9.1
-# vim
-# AppCollector
+FROM openjdk:8-jdk-alpine
 
-# extend the most recent long term support Ubuntu version
-FROM ubuntu:14.04
+LABEL Miguel Doctor <migueldoctor@gmail.com>
 
-MAINTAINER JUN-HAN LIN (http://soslab.nccu.edu.tw, john.lin0420@gmail.com)
+RUN apk add --no-cache curl tar bash procps
 
-# this is a non-interactive automated build - avoid some warning messages
-ENV DEBIAN_FRONTEND noninteractive
+# Downloading and installing Maven
+ARG MAVEN_VERSION=3.6.3
+ARG USER_HOME_DIR="/root"
+ARG SHA=b4880fb7a3d81edd190a029440cdf17f308621af68475a4fe976296e71ff4a4b546dd6d8a58aaafba334d309cc11e638c52808a4b0e818fc0fd544226d952544
+ARG BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries
 
-# update dpkg repositories
-RUN apt-get update
+RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
+  && echo "Downlaoding maven" \
+  && curl -fsSL -o /tmp/apache-maven.tar.gz ${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
+  \
+  && echo "Checking download hash" \
+  && echo "${SHA}  /tmp/apache-maven.tar.gz" | sha512sum -c - \
+  \
+  && echo "Unziping maven" \
+  && tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 \
+  \
+  && echo "Cleaning and setting links" \
+  && rm -f /tmp/apache-maven.tar.gz \
+  && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
 
-# install wget
-RUN apt-get install -y wget
+ENV MAVEN_HOME /usr/share/maven
+ENV MAVEN_CONFIG "$USER_HOME_DIR/.m2"
 
-# get maven 3.2.2
-RUN wget --no-verbose -O /tmp/apache-maven-3.2.2.tar.gz http://archive.apache.org/dist/maven/maven-3/3.2.2/binaries/apache-maven-3.2.2-bin.tar.gz
-
-# verify checksum
-RUN echo "87e5cc81bc4ab9b83986b3e77e6b3095 /tmp/apache-maven-3.2.2.tar.gz" | md5sum -c
-
-# install maven
-RUN tar xzf /tmp/apache-maven-3.2.2.tar.gz -C /opt/
-RUN ln -s /opt/apache-maven-3.2.2 /opt/maven
-RUN ln -s /opt/maven/bin/mvn /usr/local/bin
-RUN rm -f /tmp/apache-maven-3.2.2.tar.gz
-ENV MAVEN_HOME /opt/maven
-
-# install git
-RUN apt-get install -y git
-
-# install vim
-RUN apt-get install -y vim
-
-# remove download archive files
-RUN apt-get clean
-
-# set shell variables for java installation
-ENV java_version 1.8.0_11
-ENV filename jdk-8u11-linux-x64.tar.gz
-ENV downloadlink http://download.oracle.com/otn-pub/java/jdk/8u11-b12/$filename
-
-# download java, accepting the license agreement
-RUN wget --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" -O /tmp/$filename $downloadlink
-
-# unpack java
-RUN mkdir /opt/java-oracle && tar -zxf /tmp/$filename -C /opt/java-oracle/
-ENV JAVA_HOME /opt/java-oracle/jdk$java_version
-ENV PATH $JAVA_HOME/bin:$PATH
-
-# configure symbolic links for the java and javac executables
-RUN update-alternatives --install /usr/bin/java java $JAVA_HOME/bin/java 20000 && update-alternatives --install /usr/bin/javac javac $JAVA_HOME/bin/javac 20000
-
+CMD [""]
