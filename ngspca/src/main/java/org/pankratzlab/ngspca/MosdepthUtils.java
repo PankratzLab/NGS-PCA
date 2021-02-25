@@ -97,7 +97,7 @@ class MosdepthUtils {
     int col = 0;
     //    https://dzone.com/articles/the-evolution-of-producer-consumer-problem-in-java
     BlockingQueue<Future<BedRegionResult>> blockingQueue = new LinkedBlockingDeque<>(threads);
-    ExecutorService executor = Executors.newFixedThreadPool(threads);
+    ExecutorService executor = Executors.newFixedThreadPool(Math.max(threads, 2));
 
     Runnable producerTask = () -> {
       try {
