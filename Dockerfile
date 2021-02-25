@@ -10,5 +10,4 @@ RUN mvn install
 FROM openjdk:8-jre
 WORKDIR /app
 COPY --from=1 /app/ngspca/target/ngspca-0.01-SNAPSHOT.jar /app
-ENTRYPOINT ["sh", "-c"]
-CMD ["java -jar ngspca-0.01-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "ngspca-0.01-SNAPSHOT.jar"]
