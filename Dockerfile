@@ -2,8 +2,6 @@ FROM alpine/git
 WORKDIR /app
 RUN git clone https://github.com/PankratzLab/NGS-PCA.git
 WORKDIR /app/NGS-PCA
-RUN git pull
-RUN git checkout docker
 
 FROM maven:3.6.3-openjdk-11
 WORKDIR /app/ngspca
