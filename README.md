@@ -40,7 +40,7 @@ ngsPCAThreads=24
 numPCs=100
 
 ngsPCAExcludeRegions=ngs_pca_exclude.sv_blacklist.map.kmer.50.1.0.dgv.gsd.sorted.merge.bed
-jar=$HOME/ngspca-0.01-SNAPSHOT.846fb69.jar
+jar=$HOME/ngspca.jar
 
 java -Xmx60G -jar "$jar" \
 -input $mosDepthResultsDir \
@@ -63,7 +63,7 @@ For GRCh38/hg38 WES analysis, the WGS exclude bed file can be concatenated with 
 
 ### Brief pipeline description
 
-The jar can be downloaded from the the latest release https://github.com/PankratzLab/NGS-PCA/releases or https://github.com/PankratzLab/NGS-PCA/blob/master/build/ngspca-0.01-SNAPSHOT.846fb69.jar
+The jar can be downloaded from a release https://github.com/PankratzLab/NGS-PCA/releases or be run from docker
 
 
 The ngspca jar will essentially:
