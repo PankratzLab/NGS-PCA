@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.pankratzlab.ngspca</groupId>
 	<artifactId>ngspca</artifactId>
-  <version>0.01-SNAPSHOT</version>
+  <version>0.02-SNAPSHOT</version>
   <name>ngspca</name>
   <url>http://maven.apache.org</url>
   <dependencies>
