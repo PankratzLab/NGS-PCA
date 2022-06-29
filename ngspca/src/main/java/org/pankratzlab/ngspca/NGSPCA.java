@@ -64,7 +64,7 @@ public class NGSPCA {
       stream.skip(1).map(l -> l.split(delim))
             .forEach(a -> dm.setRow(rowIndex[0]++,
                                     Utils.convertToDoubleArray(Arrays.copyOfRange(a, 1, a.length),
-                                                               log)));
+                                                               0, log)));
       if (normMatrix) {
         log.info("Normalizing input matrix");
         NormalizationOperations.foldChangeAndCenterRows(dm, log);
