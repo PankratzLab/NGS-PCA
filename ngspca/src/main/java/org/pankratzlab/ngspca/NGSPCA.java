@@ -17,6 +17,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.pankratzlab.ngspca.BedUtils.BEDOverlapDetector;
 import org.pankratzlab.ngspca.MosdepthUtils.REGION_STRATEGY;
+import org.pankratzlab.ngspca.RandomizedSVD.DISTRIBUTION;
 
 /**
  * A simplified version of BamImport that uses MosDepth output or a custom input matrix to generate
@@ -26,7 +27,7 @@ public class NGSPCA {
 
   private static void runInputMatrix(String inputMatrixFile, String outputDir, int numPcs,
                                      int niters, int numOversamples, int sampleAt, int randomSeed,
-                                     boolean overwrite, boolean normMatrix,
+                                     boolean overwrite, boolean normMatrix, DISTRIBUTION d,
                                      Logger log) throws InterruptedException, ExecutionException,
                                                  IOException {
     new File(outputDir).mkdirs();
@@ -74,7 +75,7 @@ public class NGSPCA {
       log.info("Loading existing serialized file " + tmpNormDm);
       dm = (BlockRealMatrix) FileOps.readSerial(tmpNormDm, log);
     }
-    computeSVD(outputDir, numPcs, niters, numOversamples, randomSeed, log, samples, regions, dm);
+    computeSVD(outputDir, numPcs, niters, numOversamples, randomSeed, log, samples, regions, dm, d);
 
   }
 
@@ -97,7 +98,7 @@ public class NGSPCA {
   private static void runMosdepth(String input, String outputDir, String bedExclude,
                                   REGION_STRATEGY regionStrategy, int numPcs, int niters,
                                   int numOversamples, int sampleAt, int randomSeed,
-                                  boolean overwrite, int threads,
+                                  boolean overwrite, int threads, DISTRIBUTION d,
                                   Logger log) throws InterruptedException, ExecutionException,
                                               IOException {
     new File(outputDir).mkdirs();
@@ -170,18 +171,18 @@ public class NGSPCA {
     //    RandomizedSVD.dumpMatrix(inputMatrix, dm, "BIN", samples.toArray(new String[samples.size()]),
     //                             regions.toArray(new String[regions.size()]), false, log);
 
-    computeSVD(outputDir, numPcs, niters, numOversamples, randomSeed, log, samples, regions, dm);
+    computeSVD(outputDir, numPcs, niters, numOversamples, randomSeed, log, samples, regions, dm, d);
   }
 
   static void computeSVD(String outputDir, int numPcs, int niters, int numOversamples,
                          int randomSeed, Logger log, List<String> samples, List<String> regions,
-                         BlockRealMatrix dm) {
+                         BlockRealMatrix dm, DISTRIBUTION d) {
     RandomizedSVD svd = new RandomizedSVD(samples, regions, log);
 
     log.info("Oversampling set to: " + numOversamples);
     log.info("Subspace iterations set to: " + niters);
     log.info("Random seed set to: " + randomSeed);
-    svd.fit(dm, numPcs, niters, numOversamples, randomSeed);
+    svd.fit(dm, numPcs, niters, numOversamples, randomSeed, d);
     // perform SVD
 
     String pcs = outputDir + "svd.pcs.txt";
@@ -230,16 +231,19 @@ public class NGSPCA {
 
       int randomSeed = Integer.parseInt(cmd.getOptionValue(CmdLine.RANDOM_SEED,
                                                            Integer.toString(CmdLine.DEFAULT_RANDOM_SEED)));
+
+      DISTRIBUTION d = DISTRIBUTION.valueOf(cmd.getOptionValue(CmdLine.DISTRIBUTION,
+                                                               RandomizedSVD.DISTRIBUTION.UNIFORM.toString()));
       String bedExclude = cmd.getOptionValue(CmdLine.EXCLUDE_BED_FILE,
                                              CmdLine.DEFAULT_EXCLUDE_BED_FILE);
       if (cmd.hasOption(CmdLine.MATRIX_INPUT_ARG)) {
         runInputMatrix(input, outputDir, numPcs, niters, numOversamples, sampleAt, randomSeed,
                        cmd.hasOption(CmdLine.OVERWRITE_ARG),
-                       cmd.hasOption(CmdLine.NORM_MATRIX_INPUT_ARG), log);
+                       cmd.hasOption(CmdLine.NORM_MATRIX_INPUT_ARG), d, log);
       } else {
         runMosdepth(input, outputDir, bedExclude, REGION_STRATEGY.AUTOSOMAL, numPcs, niters,
                     numOversamples, sampleAt, randomSeed, cmd.hasOption(CmdLine.OVERWRITE_ARG),
-                    threads, log);
+                    threads, d, log);
       }
     } catch (Exception e) {
       log.log(Level.SEVERE, "an exception was thrown", e);

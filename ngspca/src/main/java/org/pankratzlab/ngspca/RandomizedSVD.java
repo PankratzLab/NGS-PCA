@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Random;
 import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,6 +20,10 @@ import Jama.Matrix;
 import Jama.QRDecomposition;
 
 public class RandomizedSVD {
+
+  enum DISTRIBUTION {
+    UNIFORM, GAUSSIAN;
+  }
 
   //  https://arxiv.org/pdf/0909.4061.pdf
   //  Compute a (truncated) randomized SVD of a BlockRealMatrix
@@ -65,7 +70,7 @@ public class RandomizedSVD {
    * @param randomSeed random seed for sampling matrix
    */
   public void fit(BlockRealMatrix A, int numberOfComponentsToStore, int niters, int numOversamples,
-                  int randomSeed) {
+                  int randomSeed, DISTRIBUTION d) {
     this.numComponents = Math.min(numberOfComponentsToStore,
                                   Math.min(A.getColumnDimension(), A.getRowDimension()));
     if (numComponents < numberOfComponentsToStore) {
@@ -87,9 +92,9 @@ public class RandomizedSVD {
       n = A.getColumnDimension();
     }
 
-    log.info("Selecting randomized Q");
+    log.info("Selecting randomized Q using distribution " + d.toString());
 
-    RealMatrix Y = A.multiply(randn(n, Math.min(n, numComponents + numOversamples), randomSeed));
+    RealMatrix Y = A.multiply(randn(n, Math.min(n, numComponents + numOversamples), randomSeed, d));
 
     log.info("Caching A_t");
     BlockRealMatrix A_t = A.transpose();
@@ -145,13 +150,22 @@ public class RandomizedSVD {
    * @return a {@link RealMatrix} populated with random values (deterministic random using
    *         {@link MersenneTwister})
    */
-  private static RealMatrix randn(int rows, int columns, int randomSeed) {
+  private static RealMatrix randn(int rows, int columns, int randomSeed, DISTRIBUTION d) {
     RealMatrix m = MatrixUtils.createRealMatrix(rows, columns);
     MersenneTwister twister = new MersenneTwister(randomSeed);
-
+    //twister.nextGaussian()
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < columns; j++) {
-        m.setEntry(i, j, twister.nextDouble());
+        switch (d) {
+          case UNIFORM:
+            m.setEntry(i, j, twister.nextDouble());
+            break;
+          case GAUSSIAN:
+            m.setEntry(i, j, twister.nextDouble());
+            break;
+          default:
+            break;
+        }
       }
     }
     return m;

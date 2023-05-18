@@ -28,6 +28,7 @@ class CmdLine {
   static final String N_ITERS = "iters";
   static final String OVERSAMPLE = "oversample";
   static final String RANDOM_SEED = "randomSeed";
+  static final String DISTRIBUTION = "distribution";
 
   static final int DEFAULT_RANDOM_SEED = 42;
   static final int DEFAULT_PCS = 20;
@@ -104,6 +105,15 @@ class CmdLine {
                                     .desc("Random seed for generating sampling matrix for randomized PCA (probably not worth changing the default)"
                                           + DEFAULT_RANDOM_SEED)
                                     .required(false).build();
+
+    final Option distribution = Option.builder(DISTRIBUTION).hasArg(true).required()
+                                      .longOpt(DISTRIBUTION).hasArg()
+                                      .desc("The distribution that will be used to seed the initial matrix. Options are "
+                                            + RandomizedSVD.DISTRIBUTION.UNIFORM.toString() + " or "
+                                            + RandomizedSVD.DISTRIBUTION.GAUSSIAN.toString()
+                                            + " Default"
+                                            + RandomizedSVD.DISTRIBUTION.UNIFORM.toString())
+                                      .required(false).build();
     final Option matrix = Option.builder(MATRIX_INPUT_ARG).hasArg(false).longOpt(MATRIX_INPUT_ARG)
                                 .desc("The input provided by " + INPUT_ARG
                                       + " is a matrix (i.e. SVD will be performed directly on the matrix, without normalization, to generate PCS")
@@ -127,6 +137,7 @@ class CmdLine {
     options.addOption(niter);
     options.addOption(oversamples);
     options.addOption(randomSeed);
+    options.addOption(distribution);
     options.addOption(overwrite);
 
     return options;
