@@ -161,7 +161,7 @@ public class RandomizedSVD {
             m.setEntry(i, j, twister.nextDouble());
             break;
           case GAUSSIAN:
-            m.setEntry(i, j, twister.nextDouble());
+            m.setEntry(i, j, twister.nextGaussian());
             break;
           default:
             break;
