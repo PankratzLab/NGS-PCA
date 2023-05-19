@@ -10,6 +10,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.pankratzlab.ngspca.RandomizedSVD.DISTRIBUTION;
 
 /**
  * Utility class to process cmdline arguments
@@ -28,13 +29,15 @@ class CmdLine {
   static final String N_ITERS = "iters";
   static final String OVERSAMPLE = "oversample";
   static final String RANDOM_SEED = "randomSeed";
-  static final String DISTRIBUTION = "distribution";
+  static final String DISTRIBUTION_ARG = "distribution";
 
   static final int DEFAULT_RANDOM_SEED = 42;
   static final int DEFAULT_PCS = 20;
   static final int DEFAULT_SAMPLE = 1;
   static final String DEFAULT_EXCLUDE_BED_FILE = null;
-
+  static final DISTRIBUTION DEFAULT_DISTRIBUTION = DISTRIBUTION.UNIFORM;
+  //  static final org.pankratzlab.ngspca.RandomizedSVD.DISTRIBUTION DEFAULT_DISTRIBUTION=DISTRIBUTION.
+  //
   static final int DEFAULT_THREADS = 4;
 
   static final String HELP = "help";
@@ -106,13 +109,12 @@ class CmdLine {
                                           + DEFAULT_RANDOM_SEED)
                                     .required(false).build();
 
-    final Option distribution = Option.builder(DISTRIBUTION).hasArg(true).required()
-                                      .longOpt(DISTRIBUTION).hasArg()
+    final Option distribution = Option.builder(DISTRIBUTION_ARG).hasArg(true).required()
+                                      .longOpt(DISTRIBUTION_ARG).hasArg()
                                       .desc("The distribution that will be used to seed the initial matrix. Options are "
                                             + RandomizedSVD.DISTRIBUTION.UNIFORM.toString() + " or "
-                                            + RandomizedSVD.DISTRIBUTION.GAUSSIAN.toString()
-                                            + " Default"
-                                            + RandomizedSVD.DISTRIBUTION.UNIFORM.toString())
+                                            + RandomizedSVD.DISTRIBUTION.GAUSSIAN.toString() + "."
+                                            + " Default is " + DEFAULT_DISTRIBUTION.toString())
                                       .required(false).build();
     final Option matrix = Option.builder(MATRIX_INPUT_ARG).hasArg(false).longOpt(MATRIX_INPUT_ARG)
                                 .desc("The input provided by " + INPUT_ARG

@@ -232,8 +232,8 @@ public class NGSPCA {
       int randomSeed = Integer.parseInt(cmd.getOptionValue(CmdLine.RANDOM_SEED,
                                                            Integer.toString(CmdLine.DEFAULT_RANDOM_SEED)));
 
-      DISTRIBUTION d = DISTRIBUTION.valueOf(cmd.getOptionValue(CmdLine.DISTRIBUTION,
-                                                               RandomizedSVD.DISTRIBUTION.UNIFORM.toString()));
+      DISTRIBUTION d = DISTRIBUTION.valueOf(cmd.getOptionValue(CmdLine.DISTRIBUTION_ARG,
+                                                               CmdLine.DEFAULT_DISTRIBUTION.toString()));
       String bedExclude = cmd.getOptionValue(CmdLine.EXCLUDE_BED_FILE,
                                              CmdLine.DEFAULT_EXCLUDE_BED_FILE);
       if (cmd.hasOption(CmdLine.MATRIX_INPUT_ARG)) {
